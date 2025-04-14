@@ -1,0 +1,919 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String @id @default(auto()) @map("_id") @db.ObjectId
+  name            String?
+  email           String?   @unique
+  emailVerified   DateTime?
+  image           String?
+  hashedPassword  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  favoriteIds     String[] @db.ObjectId
+  taggedInboxIds  String[] @db.ObjectId
+  isAdmin         Boolean  @default(false)
+  cardReadMode    Boolean  @default(true)
+  showBGImage     Boolean  @default(false)
+  cardYscroll     Boolean  @default(true)
+  cardShowTitle   Boolean  @default(true)
+  roles           String[] 
+  pageSize        Int  @default(8)
+  recentDays      Int @default(7)
+  notificationToaster Boolean @default(true)  
+  showMobileView Boolean @default(true)
+  togglePendingTasksOrAll Boolean @default(true)
+  toggleRecentTaskorAll Boolean @default(true)
+  toggleOverdueorAll Boolean @default(false)  
+  toggleInverse Boolean @default(false)
+  toggleInverseTable Boolean @default(false)
+  emptyListShow Boolean @default(false)
+  showMyProjectsOnLoad Boolean @default(true)
+  collapseBoards Boolean@default(true)
+  accounts Account[]
+  listings Listing[]
+  reservations Reservation[]
+  boards Board[]
+  lists List[]
+  cards Card[]
+  cardImages CardImage[]
+  taggedCards CardToUser[]
+  comments Comment[]
+  boardIds  String[] @db.ObjectId
+  boadViews BoardView[]   @relation(fields: [boardIds], references: [id])
+}
+
+
+model Account {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String   @db.ObjectId
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.String
+  access_token       String?  @db.String
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.String
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Listing {
+  id             String @id @default(auto()) @map("_id") @db.ObjectId
+  title String
+  description String
+  imageSrc String
+  createdAt DateTime @default(now())
+  category  String
+  roomCount Int
+  bathroomCount Int
+  guestCount Int
+  locationValue String
+  userId String @db.ObjectId
+  price Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reservations Reservation[]
+}
+
+
+model Reservation {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
+  listingId String @db.ObjectId  
+  startDate DateTime
+  endDate DateTime
+  totalPrice Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+}
+
+
+model Board {
+  id            String @id @default(auto()) @map("_id") @db.ObjectId
+  orgId         String?
+  title         String
+  imageId       String  @db.String
+  imageThumbUrl String  @db.String
+  imageFullUrl  String  @db.String
+  imageUserName String  @db.String
+  imageLinkHTML String  @db.String
+  lists         List[]
+  views        BoardView[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  active        Boolean  @default(true)
+  public        Boolean  @default(false)
+  userId        String? @db.ObjectId
+  percent       Int @default(0)
+  progressStatus String @default("no value given")
+  dragMode      Boolean  @default(true)
+  user          User? @relation(fields: [userId], references: [id], onDelete: Cascade) // onDelete: Cascade here
+
+}
+
+model List {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  order     Int
+
+  boardId   String //  @db.ObjectId //added to remove swiggles...
+  board     Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  cards     Card[]
+  
+  visible   Boolean  @default(true) //some cards carry senstivity information, user need to protect it
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  active    Boolean  @default(true)
+  userId    String  @db.ObjectId
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  percent   Int @default(0)
+  @@index([boardId])
+  @@index([userId])
+}
+
+model Card {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  order       Int
+  description String? @db.String
+  progress    String  @db.String @default("not_started")
+  listId      String // @db.ObjectId//added to remove swiggles.....
+  list        List  @relation(fields: [listId], references: [id], onDelete: Cascade)  
+  visible     Boolean  @default(false) //some cards carry senstivity information, user need to protect it
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  active      Boolean  @default(true)
+  userId      String  @db.ObjectId
+  dueDate     DateTime?  
+  completedDate     DateTime?  
+  tagIDs      String[]  @db.ObjectId
+  tags        Tag[] @relation(fields: [tagIDs], references: [id])
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taggedUsers CardToUser[]
+  comments   Comment[]
+
+
+  //  // New fields for calculations
+  // startDate      DateTime?
+  // endDate        DateTime?
+  // estimatedHours Float?    // Estimated time in hours
+  // actualHours    Float?    // Actual time spent in hours
+  // Add the new field for the array of pictures
+  cardImages   CardImage[] // Store URLs or IDs of the images
+
+  
+  @@index([listId])
+  @@index([userId])
+  @@index([tagIDs])
+
+}
+
+model CardImage {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  cardId      String  @db.ObjectId
+  url         String
+  card        Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  type        String @default("image")
+  userId      String?  @db.ObjectId
+  //user        User? @relation(fields: [userId], references: [id])
+  user        User? @relation(fields: [userId], references: [id], onDelete: Cascade) // onDelete: Cascade here
+
+  fileName    String?
+  createdAt   DateTime? @default(now())
+
+  @@index([cardId])
+}
+model CardToUser {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  cardId      String  @db.ObjectId
+  card        Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  userId      String @db.ObjectId
+  userEmail   String? // copy for ready search overheads
+  //user        User @relation(fields: [userId], references: [id])   
+  user        User? @relation(fields: [userId], references: [id], onDelete: Cascade) // onDelete: Cascade here
+
+  @@index([cardId,userId])
+}
+model Tag {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId  
+  name      String // @unique 
+  description String? @db.String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt  
+  cardIDs  String[] @db.ObjectId
+  cards    Card[]   @relation(fields: [cardIDs], references: [id])
+
+  @@unique([name])
+
+}
+
+model Comment{
+  id        String @id @default(auto()) @map("_id") @db.ObjectId 
+  cardId    String  @db.ObjectId
+  comment   String? @db.String  
+  imageThumbUrl       String? //copy duplicate to reduce fetch overheads
+  ownerEmail String?// copy to reduce overheads
+  card      Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  userId    String @db.ObjectId
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt 
+  @@index([cardId])
+  @@index([userId])
+}
+ 
+model BoardView{// per user
+  id        String @id @default(auto()) @map("_id") @db.ObjectId 
+  boardId    String  @db.ObjectId
+  board      Board @relation(fields: [boardId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt 
+  viewCount  Int? @default(0)
+   // 0n 21 January 2025 Test the code if there are multiple user per boardView but none
+  userID  String[] @db.ObjectId
+  users    User[]   @relation(fields: [userID], references: [id])
+
+  @@index([boardId])
+}
+ 
+
+enum ACTION {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+enum ENTITY_TYPE {
+  BOARD
+  LIST
+  CARD
+  ASSET
+  WORKORDER  
+}
+
+model AuditLog {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  orgId       String
+  action      ACTION
+  entityId    String
+  entityType  ENTITY_TYPE
+  entityTitle String
+  userId      String?
+  userImage   String @db.String
+  userName    String @db.String
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model OrgLimit {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  orgId       String @unique
+  count       Int @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model OrgSubscription {
+  id                String @id @default(auto()) @map("_id") @db.ObjectId
+  orgId             String @unique
+  stripeCustomerId  String? @unique @map(name: "stripe_customer_id")
+  stripeSubscriptionId String? @unique @map(name: "stripe_subscription_id")
+  stripePriceId        String? @map(name: "stripe_price_id")
+  stripeCurrentPeriodEnd DateTime? @map(name: "stripe_current_period_end")
+}
+
+// model WorkOrder {
+//   id          Int     @id @default(autoincrement())
+//   description String
+//   status      String
+//   priority    Int
+//   // type        String   @enum(["asset", "production"])
+//   // assetId     Int?    @relation(fields: [assetId], references: [id])
+//   createdAt   DateTime @default(now())
+//   updatedAt   DateTime @default(now())
+// }
+
+// model Asset {
+//   id        Int     @id @default(autoincrement())
+//   name      String  @unique
+//   description String
+//   // workOrders WorkOrder[] @relation(fields: [assetId], references: [id])
+// }
+
+
+//Assest managment model
+model AssetWorkOrder {// worker for assets only.... what about for other things
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  description String
+  status      String @default("pending")
+  priority Int?
+  estimatedCost Float?
+  actualCost Float?
+  attachments Attachment[]
+  activities Activity[]
+  costs Cost[]
+  assignments Assignment[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+
+
+  // link to asset......
+  assetId String @db.ObjectId
+  asset Asset @relation(fields: [assetId],references: [id])
+  @@index([assetId])
+
+}
+// ProductionWorkOrder.prisma
+model ProductionWorkOrder {
+  
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  description  String
+  status       String
+  
+  priority Int?
+  estimatedCost Float?
+  actualCost Float?
+  // attachments Attachment[]
+  // activities Activity[]
+  // costs Cost[]
+  // assignments Assignment[]
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+}
+
+
+model Attachment {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  workOrderId String @db.ObjectId
+  workorder AssetWorkOrder @relation(fields: [workOrderId], references: [id])
+  fileName String
+  fileUrl String
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+  @@index([workOrderId])
+}
+model Activity {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  workOrderId String  @db.ObjectId
+  description String
+  status      String @default("pending")
+  startTime   DateTime
+  endTime     DateTime
+  workOrder   AssetWorkOrder @relation(fields: [workOrderId], references: [id])
+  costs       Cost[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([workOrderId])
+
+}
+
+model Cost {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  workOrderId String  @db.ObjectId
+  activityId  String  @db.ObjectId
+  description String
+  amount      Float
+  costCenter String?
+  reimbursementAmount Float?
+  currency String?
+  workOrder AssetWorkOrder @relation(fields: [workOrderId], references: [id])
+  activity  Activity @relation(fields: [activityId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([workOrderId])
+  @@index([activityId])
+
+}
+// Asset Modelling...............
+model Asset {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  asset_num String @unique
+  capacity String // tonnage that it can handle, voltage etc
+  
+  manufacturer String?
+  type String? // e.g., "Excavator", "Crane", "Generator"
+  make String?
+  model String?
+  weight  Float?
+  dimensions String? //length width heigh etc
+  fuelType String? //gasoline, deisel, electric etc
+  
+  // downtimeHours ---calculated from failures and idle time
+  purchaseDate DateTime?
+  sed        DateTime?
+  status     String @default("available")//available, brokendown, under-service, 
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+  disposalDate DateTime?
+  disposalReason String?
+  scrapValue Float?
+  serialNumber String?
+  assetCategory String?
+
+  loadCapacity Int?
+  fuelEfficiency Float? // Miles per gallon
+  mileage         Int?
+  hoursOfOperation Float?
+  fuelConsumption Float? // Total fuel consumed
+
+  //------calculations.....
+  availability  Json?  //@default("") // Timebased..... {'current': 10, '2018': 90, '2019':10 }
+  mtbf Json?// Timebased..... {'jan 2008': 15, '2015-2020':78,'updatedAt': 2025 -Jan-20-1700hrs }
+  reliability Json? //
+  //----------------------
+  trips Trip[]// an asset can have many trips
+  //trips AssetToTrip []
+   
+  //production AssetToProd[]
+  production AssetProduction[]//an asset can be used to produced multiple product
+
+  // assetUtilisation AssetUtilisation []
+
+  hiriout AssetHireOut []// hire out
+
+  //1---->M: disposal history  
+  disposalHistory DisposalHistory[]
+
+  //****************************B: ONE->MANY********************************************************
+  //------Asset Down_time accountability------
+  //a.....
+  //1--->M: An asset can have history of failures
+  failures   Failure[]// calculation of opportunity cost losts....
+  //b......;
+  //1---->M: An asset can have multiple periods where is is iddle and not being utlised
+  //-----calc how max continoous length of time the asset can be free 
+  idleTimes      IdleTime[]// machine not being utilised but available
+  // --------------------------------------  
+  //1--->M :breakdown history
+  breakdowns Breakdown[]// machine un-available
+
+  //1---->M:  preventive maintenanance
+  preventiveMaintenancePlans PreventiveMaintenance[]
+
+ //1---M: machine to have multiple logs of calibration info history
+  calibrations Calibration []// file history of calibration....
+  
+  //1---->M an asset can have multiple AssetWorkOrders
+  workorders AssetWorkOrder [] //cost of repairing machine...
+
+  assetCatIDs      String[]  @db.ObjectId
+  assetCategories  AssetCategory[] @relation(fields: [assetCatIDs], references: [id])
+
+  
+ // locationID   String  @db.ObjectId
+  //location  Location @relation(fields: [locationID], references: [id])
+ }
+
+model AssetCategory{// etc pneumatic, electrical, portable-meachanical, workshop implement
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String @unique
+  description String?
+  //one asssetcat to many assets
+  //1-->M
+  assetIDs  String[] @db.ObjectId  
+  assets Asset[]  @relation(fields: [assetIDs], references: [id])  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+
+ }
+
+ 
+model Location {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+ // assets Asset []
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+
+}
+
+//  model AssetUtilisation {
+
+//   id   String @id @default(auto()) @map("_id") @db.ObjectId
+//   type  ActivityType
+//   trip Trip?
+//   production AssetProduction?
+//   assetId  String  @db.ObjectId
+  
+//   asset  Asset @relation(fields: [assetId], references: [id])
+
+//  }
+
+// model AssetToTrip {
+//   id          String @id @default(auto()) @map("_id") @db.ObjectId
+//   assetId      String  @db.ObjectId
+//   asset       Asset? @relation(fields: [assetId], references: [id])
+//   tripId      String @db.ObjectId
+//   trip         Trip? @relation(fields: [tripId], references: [id])   
+//   @@index([assetId,tripId])
+// }
+
+
+// model AssetToProd {
+//   id          String @id @default(auto()) @map("_id") @db.ObjectId
+//   assetId     String  @db.ObjectId
+//   asset       Asset? @relation(fields: [assetId], references: [id])
+//   prodId      String @db.ObjectId
+//   production  AssetProduction? @relation(fields: [prodId], references: [id])   
+//   @@index([assetId,prodId])
+// }
+
+//  enum  ActivityType {
+//   Trip
+//   AssetProduction
+//  }
+// production
+model AssetProduction {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  shiftSupervisor String
+  startDate DateTime
+  endDate   DateTime
+  hours     Int
+  unitcCost  Int
+  totalcost Float
+  Output    Int
+  assetId  String  @db.ObjectId
+  asset Asset @relation(fields: [assetId], references: [id])
+  // asset AssetUtilisation @relation(fields: [assetId], references: [id])
+  //assetProduction AssetToProd[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+ // @@index([assetId])
+
+}
+
+// Only trucks has trips
+model Trip {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  assetId  String  @db.ObjectId
+  startDate DateTime
+  endDate   DateTime
+  distance Int
+  load     Int
+  asset Asset @relation(fields: [assetId], references: [id])
+  //assetTrips AssetToTrip[]
+  // asset AssetUtilisation @relation(fields: [assetId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+  //@@index([assetId])
+
+}
+
+model AssetHireOut{
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  contractor String
+  startDate DateTime
+  endDate   DateTime
+  hourlyrate Int
+  dailyrate  Int
+  totalcost Int
+
+  assetId  String  @db.ObjectId
+  asset Asset @relation(fields: [assetId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+  @@index([assetId])
+
+}
+
+
+
+model Calibration{
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  calibrationDate DateTime
+  description String
+  assetId String @db.ObjectId
+  // Relationship with Asset model
+  asset Asset   @relation(fields: [assetId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([assetId])
+
+}
+model Breakdown {//total failure machine unavailable....
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  assetId   String  @db.ObjectId
+  occurredAt DateTime  
+  startDate DateTime?// actual work.....
+  endDate DateTime?// used to calculate downtime
+  description String
+  // 1---1 relations
+  asset Asset @relation(fields: [assetId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+  @@index([assetId])
+
+}
+
+model Failure {// can lead to breakdown or asset can still be working.....
+  //machine can be available even below 100%
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  assetId         String @db.ObjectId
+  description String
+  occurrenceDate DateTime?
+  resolutionDate DateTime?
+  asset        Asset   @relation(fields: [assetId], references: [id])  
+  failureTagIDs      String[]  @db.ObjectId
+  failureTags FailureTag[] @relation(fields: [failureTagIDs], references: [id])  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+  @@index([assetId])
+  @@index([failureTagIDs])
+
+}
+model IdleTime {// machine available but not utilised//onhand
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  assetId         String @db.ObjectId
+  description String
+  occurrenceDate DateTime
+  resolutionDate DateTime?
+  asset        Asset   @relation(fields: [assetId], references: [id])  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+  @@index([assetId])
+
+}
+
+model FailureTag {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  name String  @unique
+  description String?
+  //1---M: failure type can be share by many failures
+  failureIDs  String[] @db.ObjectId
+  failures Failure[]  @relation(fields: [failureIDs], references: [id])  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+
+}
+
+
+
+model PreventiveMaintenance {// start as plan inth future
+ id        String @id @default(auto()) @map("_id") @db.ObjectId
+  assetId   String  @db.ObjectId
+  scheduledDate DateTime
+  
+  startDate DateTime?// actual work.....
+  endDate DateTime?// used to calculate downtime
+
+  status     String @default("pending")
+  asset Asset @relation(fields: [assetId], references: [id])
+
+  //preventive can havemultiple tasks----
+  maintenanceTasks MaintenanceTask[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+  @@index([assetId])
+
+}
+model MaintenanceTask {
+ id        String @id @default(auto()) @map("_id") @db.ObjectId
+  preventiveMaintenanceId String @db.ObjectId
+  description String @db.ObjectId
+  status     String @default("pending")
+  //1---M
+  partsUsed Part[]
+
+  preventiveMaintenance PreventiveMaintenance @relation(fields: [preventiveMaintenanceId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([preventiveMaintenanceId])
+
+
+}
+model Part {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  description String
+  ammendmends String
+  quantity Int
+  catalogue_code String
+  partnum String?
+  unit_cost      Float
+  maintenanceTaskId      String 
+  maintenanceTask        MaintenanceTask  @relation(fields: [maintenanceTaskId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([maintenanceTaskId])
+}
+model DisposalHistory {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  assetId   String  @db.ObjectId
+  disposalDate DateTime
+  disposalType String
+  amountReceived Float
+  scrapVendor String
+  asset Asset @relation(fields: [assetId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+  @@index([assetId])
+
+}
+//Techician details
+model Technician {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+  role String // e.g., "Maintenance Technician", "Field Technician"
+  department String
+  contactInformation String
+  expertise String // List of areas of expertise (e.g., "Electrical", "Mechanical")
+  availability Schedule[]
+  assignments Assignment[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+
+}
+
+model Schedule {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  technicianId String @db.ObjectId
+  startDate DateTime
+  endDate DateTime
+  availabilityStatus String // e.g., "Available", "Unavailable", "On Vacation"
+  technician Technician @relation(fields: [technicianId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+  @@index([technicianId])
+
+}
+
+model Assignment {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  technicianId String @db.ObjectId
+  workOrderId String @db.ObjectId
+  startDate DateTime
+  endDate DateTime
+  status String // e.g., "Assigned", "In Progress", "Completed"
+  technician Technician @relation(fields: [technicianId], references: [id])
+  workOrder AssetWorkOrder @relation(fields: [workOrderId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime  @updatedAt
+   @@index([technicianId])
+   @@index([workOrderId])
+
+}
+
+
+
+// const averageMileagePerDay = await prisma.truck.aggregate({
+//   _avg: { mileage: true },
+// });
+
+// Average fuel consumption per trip:
+
+// TypeScript
+
+
+// const averageFuelConsumptionPerTrip = await prisma.trip.aggregate({
+//   _avg: { fuelConsumption: true },
+// });
+
+// Truck utilization rate:
+
+// TypeScript
+
+
+// const utilizationRate = await prisma.truck.aggregate({
+//   _avg: { hoursOfOperation: true },
+// }).then((result) => {
+//   return result._avg.hoursOfOperation / 24 / 365; // Assuming a year has 365 days
+// });
+
+// const disposedAssets = await prisma.asset.findMany({ where: { disposalDate: { not: null } } });
+
+// Calculate the total scrap value of disposed assets:
+
+// TypeScript
+
+
+// const totalScrapValue = await prisma.asset.aggregate({
+//   _sum: { scrapValue: true },
+// });
+
+// Find the disposal history of a specific asset:
+
+// TypeScript
+
+
+// const disposalHistory = await prisma.asset.findFirst({
+//   where: { id: 123 },
+//   include: { disposalHistory: true },
+// });
+
+
+
+
+// Prisma with MongoDB: Table Relationship Code Examples
+// Prisma's approach to defining relations differs between relational databases and MongoDB due to their distinct data structures. Here are examples for common relation types in MongoDB:
+
+// One-to-One:
+
+// Consider a User with one Profile.
+
+// Code snippet
+// model User {
+//   id       Int    @id @default(autoincrement())
+//   profile  Profile?  // User can have 0 or 1 profiles
+// }
+
+// model Profile {
+//   id       Int    @id @default(autoincrement())
+//   userId   Int      // References User.id
+//   user     User   @relation(fields: [userId], references: [id])
+// }
+// Use code with caution.
+// One-to-Many:
+
+// Imagine a User with many Posts.
+
+// Code snippet
+// model User {
+//   id       Int    @id @default(autoincrement())
+//   posts    Post[]
+// }
+
+// model Post {
+//   id       Int    @id @default(autoincrement())
+//   author   User   @relation(fields: [authorId], references: [id])
+//   authorId Int
+// }
+// Use code with caution.
+// Many-to-Many:
+
+// Think of Tags associated with many Posts.
+
+// Code snippet
+// // Explicit many-to-many with a join table
+// model Post {
+//   id       Int    @id @default(autoincrement())
+//   tags     Tag[]   @relation(fields: [tagIds], references: [id])
+//   tagIds   Int[]
+// }
+
+// model Tag {
+//   id       Int    @id @default(autoincrement())
+//   posts    Post[]   @relation(fields: [postId], references: [id])
+//   postId   Int[]
+// }
+
+// model PostTag { // Join table
+//   postId   Int
+//   tagId    Int
+//   post     Post   @relation(fields: [postId], references: [id])
+//   tag     Tag   @relation(fields: [tagId], references: [id])
+//   PRIMARY KEY (postId, tagId)
+// }
+// Use code with caution.
+// Remember:
+
+// These are simplified examples. Customize fields and relations based on your specific needs.
+// Prisma doesn't enforce foreign keys in MongoDB, so data integrity relies on your application logic.
+// Refer to Prisma's documentation for detailed explanations and advanced relation options: https://www.prisma.io/docs/orm/prisma-schema/data-model/relations
+// I hope this helps! Feel free to ask if you have any further questions.
+
+
+
