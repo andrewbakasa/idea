@@ -32,7 +32,7 @@ export default async function updateCardUserId() {
                 id: card.id,
             },
             data: {
-                userId: card.list.board?.userId,
+                userId: "" //card.list.board?.userId,
             }
       }))
 

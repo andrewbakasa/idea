@@ -29,7 +29,7 @@ export default async function updateListUserId() {
                 id: list.id,
             },
             data: {
-                userId: list.board?.userId,
+                userId: "" //list.board?.userId,
             }
        }));
 
