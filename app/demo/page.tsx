@@ -281,7 +281,7 @@ const DemoProduct: React.FC = () => {
 
                   <div className="mt-5">
                     <h2 className="text-2xl">Send an E-mail</h2>
-                    <p className="text-gray-400">info@mld.ng</p>
+                    <p className="text-gray-400">info@ideam.com</p>
                   </div>
                 </div>
               </div>

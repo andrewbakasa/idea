@@ -91,7 +91,7 @@ const BoardIdLayout = async ({
 
   const user = await prisma.user.findUnique({
     where: {
-      id: board?.userId,
+      id: "",// board?.userId,
       // orgId,
     },
   });
@@ -128,7 +128,7 @@ const BoardIdLayout = async ({
   createdAt: board2.createdAt.toString(),
   updatedAt: board2.updatedAt.toString(),
   user:"",
-  user_image:board2.user.image || ""
+  user_image:board2.user?.image || ""
 };
 // console.log('safe data',safeData)
   return (

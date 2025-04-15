@@ -21,7 +21,7 @@ const Footer: React.FC<FooterProps> = () => {
             {/* 1st block */}
             <div className="col-span-12 lg:col-span-4">
               <div className="box-border border-b-4 border-blue-900 p-8 bg-gray-200 text-gray-600 text-center rounded-lg xl:w-80 mx-auto">
-                <h3 className="font-bold text-4xl mb-4">MLD</h3>
+                <h3 className="font-bold text-4xl mb-4">M3</h3>
                 <div className="text-md font-medium text-gray-600">
                   <h5>IDEA</h5>
                   <p>Harare,</p>
