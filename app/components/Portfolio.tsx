@@ -126,12 +126,8 @@ const Portfolio: React.FC<PortfolioProps> = () => {
                   ERP Management System
                 </h4>
                 <p className="text-md font-medium leading-5 h-auto md:h-48">
-                Our General ERP System and Engineering Software offer comprehensive solutions 
-                to manage various operational aspects, encompassing Operation, Maintenance, Planning, 
-                and Finance, among others. Featuring an easily customizable interface, you 
-                gain the flexibility to tailor your user experience and make your workflows 
-                fully adaptable and efficient. With established use cases across numerous business processes, 
-                we provide an assurance of a streamlined management platform for your diverse needs.
+                Our ERP and Engineering Software streamline key operations (Operation, Maintenance, Planning, Finance). Customizable, efficient workflows. 
+                Easy online access to SOPs and Catalogue enhances knowledge sharing for diverse business needs.
                 </p>
                 <div className="flex justify-center my-4">
                   <Link
