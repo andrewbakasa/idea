@@ -37,11 +37,11 @@ export default async function getArchivedCards() {
         title:card.title,
         description:card.description,
         id:card.id,
-        user_image:card.list.board.user.image,
+        user_image:card.list.board?.user?.image ||"",
         imageThumbUrl:card.list.board.imageThumbUrl,
         board_title: card.list.board.title,
         list_title:card.list.title,
-        owner_email:card.list.board.user.email||"",
+        owner_email:card.list.board?.user?.email ||"",
         
         createdAt:card.list.createdAt.toString(),
         updatedAt:card.list.updatedAt.toString(),

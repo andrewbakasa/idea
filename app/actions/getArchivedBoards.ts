@@ -43,7 +43,7 @@ export default async function getArchivedBoards() {
         createdAt: board.createdAt.toString(),
         updatedAt: board.updatedAt.toString(),
         user:"",
-        user_image:board.user.image || ""
+        user_image:board?.user?.image || ""
       })
     );
 

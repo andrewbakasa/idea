@@ -26,11 +26,11 @@ export default async function getArchivedLists() {
 
      const safeLists = lists.map((list) => ({
         id:list.id,
-        user_image:list.board.user.image,
+        user_image:list.board?.user?.image||"",
         imageThumbUrl:list.board.imageThumbUrl,
         board_title: list.board.title,
         list_title:list.title,
-        owner_email:list.board.user.email||"",
+        owner_email:list.board?.user?.email||"",
         cards: list.cards.map((card)=>({
             ...card,
             createdAt: card.createdAt.toString(),
