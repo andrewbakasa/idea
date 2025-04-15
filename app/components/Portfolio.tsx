@@ -17,14 +17,12 @@ const Portfolio: React.FC<PortfolioProps> = () => {
             <div className="bg-white transition-all ease-in-out duration-400 overflow-hidden text-gray-700 hover:scale-105 rounded-lg shadow-2xl p-3 min-h-max">
               <div className="m-2 text-justify text-sm">
                 <h4 className="font-semibold my-4 text-lg md:text-2xl text-center mb-4 h-12">
-                  Business Management System
+                  Expert AI Equipement Maintenance System
                 </h4>
                 <p className="text-md font-medium leading-5 h-auto md:h-48">
-                  Our Business Management System is a robust and easily scalable system that streamlines business
-                  operations, increase efficiency, and ultimately drive growth and profitability for your business.
-                  With features such as employee management, finance control, and many more modules to effectively
-                  manage all aspects of a business. All data is stored in the cloud and as such it is easily accessible
-                  from all devices and from any location.
+                Revolutionary rail system uses drone data for scalable, efficient monitoring of critical equipment, proactively addressing potential issues for cost-effectiveness. 
+                Autonomous drones, powered by solar towers for continuous operation, conduct inspections, capturing vital data like bearing temperature and wheel profiles. This data integrates into a cloud platform for access anywhere. AI analyzes it to predict failures and provide maintenance insights, enabling effective management of rail equipment and infrastructure for optimized operations and safety. 
+                Schedule a demo to see how this drone-powered AI solution transforms rail equipment management.
                 </p>
                 <div className="flex justify-center my-4">
                   <Link
@@ -52,14 +50,17 @@ const Portfolio: React.FC<PortfolioProps> = () => {
             <div className="bg-white transition-all ease-in-out duration-400 overflow-hidden text-gray-700 hover:scale-105 rounded-lg shadow-2xl p-3">
               <div className="m-2 text-justify text-sm">
                 <h4 className="font-semibold my-4 text-lg md:text-2xl text-center mb-4 h-12">
-                  School Management Portal
+                  Expert Modelling & Engineering
                 </h4>
                 <p className="text-md font-medium leading-5 h-auto md:h-48">
-                  Our all encompassing School Management Portal is the only solution needed for any institution. The
-                  School Management Portal (SMP) is a tool that can help educational institutions of all kinds manage
-                  their administrative tasks, automate processes, and streamline communication between teachers,
-                  students, parents, and administrators. The software can be used to manage all aspects of school
-                  operations, including student enrollment, attendance, grades, schedules, and more.
+                Visualize your Business Planning, Budgeting, Engineering, and Projects as 
+                an interactive 3D Bill of Quantities (BOQ) with integrated CAD models. Automating 
+                costing, purchasing, and supplier management, we'll produce a compelling video 
+                showcasing design variations and functionalities. This approach enables easy
+                 understanding and participation in the design process for all stakeholders, 
+                 including non-engineers, potential investors, prototyping teams, process engineers, 
+                 and manufacturing/maintenance personnel.
+                 
                 </p>
                 <div className="flex justify-center my-4">
                   <Link
@@ -87,14 +88,15 @@ const Portfolio: React.FC<PortfolioProps> = () => {
             <div className="bg-white transition-all ease-in-out duration-400 overflow-hidden text-gray-700 hover:scale-105 rounded-lg shadow-2xl p-3">
               <div className="m-2 text-justify text-sm">
                 <h4 className="font-semibold my-4 text-lg md:text-2xl text-center mb-4 h-12">
-                  Payroll Management System
+                  Data Analytics System
                 </h4>
                 <p className="text-md font-medium leading-5 h-auto md:h-48">
-                  The Payroll Management System automates the process of employee payments for businesses and
-                  organizations of different sizes. It helps to ensure that your employees get paid accurately and on
-                  time, while also reducing the time and effort required to manage payroll manually, with this system in
-                  place, you enjoy benefits such as: increased accuracy in employee payments. It can also integrate into
-                  an existing management system through well-structured APIs.
+                Harness comprehensive data mining and scraping across all traditional 
+                sources (files, Word, Excel), emails, social media, and general data 
+                sources to unlock organizational insights. Identify trends, understand root causes, 
+                analyze failure modes, reduce costs, 
+                and discover better processes. Build APIs for maintenance, planning, 
+                and operations based on these findings.
                 </p>
                 <div className="flex justify-center my-4">
                   <Link
