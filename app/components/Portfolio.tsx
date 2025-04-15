@@ -53,14 +53,13 @@ const Portfolio: React.FC<PortfolioProps> = () => {
                   Expert Modelling & Engineering
                 </h4>
                 <p className="text-md font-medium leading-5 h-auto md:h-48">
-                Visualize your Business Planning, Budgeting, Engineering, and Projects as 
-                an interactive 3D Bill of Quantities (BOQ) with integrated CAD models. Automating 
-                costing, purchasing, and supplier management, we'll produce a compelling video 
-                showcasing design variations and functionalities. This approach enables easy
-                 understanding and participation in the design process for all stakeholders, 
-                 including non-engineers, potential investors, prototyping teams, process engineers, 
-                 and manufacturing/maintenance personnel.
-                 
+                  Visualize your Business Planning, Budgeting, Engineering, and Projects as
+                  an interactive 3D Bill of Quantities (BOQ) with integrated CAD models. Automating
+                  costing, purchasing, and supplier management, we&apos;ll produce a compelling video
+                  showcasing design variations and functionalities. This approach enables easy
+                  understanding and participation in the design process for all stakeholders,
+                  including non-engineers, potential investors, prototyping teams, process engineers,
+                  and manufacturing/maintenance personnel.
                 </p>
                 <div className="flex justify-center my-4">
                   <Link
