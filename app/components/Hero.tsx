@@ -19,7 +19,7 @@ const Hero = () => {
               Bespoke Fit for Your Business Success
               </h1>
               <div className="text-xl font-semibold tracking-tight mb-5 text-gray-500">
-              We &apos;re a dedicated team of top technologists, engineers, and business minds focused on empowering established organizations like yours. Our integrated, state-of-the-art platform and comprehensive support will revolutionize how you design, model, assemble, maintain, manufacture, and operate – driving unprecedented efficiency and innovation.
+              We &apos;re a dedicated team of top technologists, engineers, and business experts focused on empowering established organizations like yours. Our integrated, state-of-the-art platform and comprehensive support will revolutionize how you design, model, assemble, maintain, manufacture, and operate – driving unprecedented efficiency and innovation.
                  
                 </div>
               <div className="mb-4 space-x-0 md:space-x-2 md:mb-8">

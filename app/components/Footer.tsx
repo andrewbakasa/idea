@@ -59,22 +59,22 @@ const Footer: React.FC<FooterProps> = () => {
               <ul className="text-md">
                 <li className="mb-2">
                   <Link href="#" className="text-[#013289] hover:text-gray-900 hover:tracking-wider transition duration-250 ease-in-out">
-                    Web Development
+                    3D Modelling
                   </Link>
                 </li>
                 <li className="mb-2">
                   <Link href="#" className="text-[#013289] hover:text-gray-900 hover:tracking-wider transition duration-250 ease-in-out">
-                    Mobile App Development
+                    Operation Management
                   </Link>
                 </li>
                 <li className="mb-2">
                   <Link href="#" className="text-[#013289] hover:text-gray-900 hover:tracking-wider transition duration-250 ease-in-out">
-                    Domain and Hosting
+                    Data Analytics and ML
                   </Link>
                 </li>
                 <li className="mb-2">
                   <Link href="#" className="text-[#013289] hover:text-gray-900 hover:tracking-wider transition duration-250 ease-in-out">
-                    General IT Consultations
+                    General Business Consultation
                   </Link>
                 </li>
               </ul>

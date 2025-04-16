@@ -17,12 +17,15 @@ const Portfolio: React.FC<PortfolioProps> = () => {
             <div className="bg-white transition-all ease-in-out duration-400 overflow-hidden text-gray-700 hover:scale-105 rounded-lg shadow-2xl p-3 min-h-max">
               <div className="m-2 text-justify text-sm">
                 <h4 className="font-semibold my-4 text-lg md:text-2xl text-center mb-4 h-12">
-                  Expert AI Equipement Maintenance System
+                  Smart Equipement Maintenance
                 </h4>
                 <p className="text-md font-medium leading-5 h-auto md:h-48">
-                Revolutionary rail system uses drone data for scalable, efficient monitoring of critical equipment, proactively addressing potential issues for cost-effectiveness. 
-                Autonomous drones, powered by solar towers for continuous operation, conduct inspections, capturing vital data like bearing temperature and wheel profiles. This data integrates into a cloud platform for access anywhere. AI analyzes it to predict failures and provide maintenance insights, enabling effective management of rail equipment and infrastructure for optimized operations and safety. 
-                Schedule a demo to see how this drone-powered AI solution transforms rail equipment management.
+                Rail equipment maintenanance by employing AI vision tech, using drone data for scalable, efficient monitoring of critical 
+                equipment, proactively addressing potential issues for cost-effectiveness and 
+                capturing engineering operation data, predict failures and provide maintenance insights, 
+                enabling effective management of rail equipment and infrastructure for optimized 
+                operations and safety.  Schedule a demo to see how this drone-powered AI solution
+                 transforms rail equipment management.
                 </p>
                 <div className="flex justify-center my-4">
                   <Link
@@ -50,16 +53,15 @@ const Portfolio: React.FC<PortfolioProps> = () => {
             <div className="bg-white transition-all ease-in-out duration-400 overflow-hidden text-gray-700 hover:scale-105 rounded-lg shadow-2xl p-3">
               <div className="m-2 text-justify text-sm">
                 <h4 className="font-semibold my-4 text-lg md:text-2xl text-center mb-4 h-12">
-                  Expert Modelling & Engineering
+                  3D Modelling & VR
                 </h4>
                 <p className="text-md font-medium leading-5 h-auto md:h-48">
-                  Visualize your Business Planning, Budgeting, Engineering, and Projects as
-                  an interactive 3D Bill of Quantities (BOQ) with integrated CAD models. Automating
-                  costing, purchasing, and supplier management, we&apos;ll produce a compelling video
-                  showcasing design variations and functionalities. This approach enables easy
-                  understanding and participation in the design process for all stakeholders,
+                  We provide platform to create visualize Planning, Engineering, and Projects as
+                  an interactive 3D Bill of Quantities (BOQ) with integrated CAD models. Incorporating
+                  costing, financing, purchasing, and supplier management, we&apos;ll in cutting edge visualized views. 
+                  Participation in the design process by all stakeholders,
                   including non-engineers, potential investors, prototyping teams, process engineers,
-                  and manufacturing/maintenance personnel.
+                  and manufacturing/maintenance personnel is made easy.
                 </p>
                 <div className="flex justify-center my-4">
                   <Link
@@ -87,15 +89,16 @@ const Portfolio: React.FC<PortfolioProps> = () => {
             <div className="bg-white transition-all ease-in-out duration-400 overflow-hidden text-gray-700 hover:scale-105 rounded-lg shadow-2xl p-3">
               <div className="m-2 text-justify text-sm">
                 <h4 className="font-semibold my-4 text-lg md:text-2xl text-center mb-4 h-12">
-                  Data Analytics System
+                  Outsource Smart Employee 
                 </h4>
                 <p className="text-md font-medium leading-5 h-auto md:h-48">
+                Outsourcing smart Employee can be delegated and help with technical, business insight for your business.
                 Harness comprehensive data mining and scraping across all traditional 
                 sources (files, Word, Excel), emails, social media, and general data 
                 sources to unlock organizational insights. Identify trends, understand root causes, 
                 analyze failure modes, reduce costs, 
                 and discover better processes. Build APIs for maintenance, planning, 
-                and operations based on these findings.
+                and operations based on these findings. SE
                 </p>
                 <div className="flex justify-center my-4">
                   <Link
@@ -123,11 +126,12 @@ const Portfolio: React.FC<PortfolioProps> = () => {
             <div className="bg-white transition-all ease-in-out duration-400 overflow-hidden text-gray-700 hover:scale-105 rounded-lg shadow-2xl p-3">
               <div className="m-2 text-justify text-sm">
                 <h4 className="font-semibold my-4 text-lg md:text-2xl text-center mb-4 h-12">
-                  ERP Management System
+                  ERP with Business Simulation
                 </h4>
                 <p className="text-md font-medium leading-5 h-auto md:h-48">
-                Our ERP and Engineering Software streamline key operations (Operation, Maintenance, Planning, Finance). Customizable, efficient workflows. 
-                Easy online access to SOPs and Catalogue enhances knowledge sharing for diverse business needs.
+                Our ERP  Software streamline key operations (Operation, Maintenance, Planning, Finance). 
+                Customizable, efficient workflows.  Easy online access to SOPs and Catalogue 
+                enhances knowledge sharing for diverse business needs using cloud platform
                 </p>
                 <div className="flex justify-center my-4">
                   <Link
