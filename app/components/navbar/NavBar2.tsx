@@ -1,8 +1,9 @@
+'use client';
 import React, { useState, useEffect } from 'react';
 import NavLinks from './NavLinks';
 import Link from 'next/link';
 
-interface NavBarProps {} // Define props if needed, otherwise use an empty interface
+interface NavBarProps {}
 
 const NavBar: React.FC<NavBarProps> = () => {
   const [top, setTop] = useState<boolean>(!window.scrollY);
@@ -10,6 +11,10 @@ const NavBar: React.FC<NavBarProps> = () => {
 
   const handleClick = () => {
     setIsOpen(!isOpen);
+  };
+
+  const handleLinkClick = () => {
+    setIsOpen(false); // Close the mobile menu after a link is clicked
   };
 
   useEffect(() => {
@@ -21,16 +26,30 @@ const NavBar: React.FC<NavBarProps> = () => {
   }, [top]);
 
   return (
-    <nav className={`fixed top-0 w-full z-30 transition duration-300 ease-in-out mb-16 ${!top && 'bg-white shadow-lg'}`}>
-      <div className="flex flex-row justify-between items-center py-2">
-        <div className="flex flex-row justify-center md:px-12 md:mx-12 items-center text-center font-semibold">
-          <Link href="/#hero" scroll={false}>
-            <h1 className="font-extrabold text-4xl text-blue-900">IDEAM</h1>
+    <nav
+      className={`fixed top-0 w-full z-30 transition duration-300 ease-in-out ${
+        !top ? 'bg-white shadow-md' : 'bg-transparent'
+      }`}
+    >
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4 flex items-center justify-between">
+        {/* Logo / Brand */}
+        <div className="flex items-center">
+          <Link href="/#hero" scroll={false} className="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
+            <h1 className="font-extrabold text-2xl md:text-3xl text-blue-900 hover:text-blue-700 transition duration-200">
+              IDEAM
+            </h1>
           </Link>
         </div>
-        <div className="group flex flex-col items-center">
-          <button className="p-2 rounded-lg lg:hidden text-blue-900" onClick={handleClick}>
-            <svg className="h-6 w-6 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+
+        {/* Mobile Menu Button */}
+        <div className="lg:hidden">
+          <button
+            className="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 text-blue-900 hover:text-blue-700 transition duration-200"
+            onClick={handleClick}
+            aria-expanded={isOpen}
+            aria-controls="mobile-menu"
+          >
+            <svg className="h-6 w-6 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               {isOpen ? (
                 <path
                   fillRule="evenodd"
@@ -45,18 +64,44 @@ const NavBar: React.FC<NavBarProps> = () => {
               )}
             </svg>
           </button>
-          <div className='hidden space-x-6 lg:inline-block p-5'>
-            <NavLinks />
-          </div>
+        </div>
 
-          <div
-            className={`fixed transition-transform duration-300 ease-in-out transit flex justify-center left-0 w-full h-auto rounded-md p-24 bg-white lg:hidden shadow-xl top-14 ${
-              isOpen ? "block" : "hidden"
-            } `}
-          >
-            <div className='flex flex-col space-y-6'>
-              <NavLinks />
-            </div>
+        {/* Desktop Navigation */}
+        <div className="hidden lg:flex space-x-6">
+          <NavLinks onLinkClick={handleLinkClick} />
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      <div
+        className={`fixed top-0 left-0 w-full h-full bg-white z-40 transform transition-transform duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        } lg:hidden`}
+      >
+        <div className="py-6 px-4 sm:px-6">
+          {/* Mobile Menu Header */}
+          <div className="flex items-center justify-between mb-8">
+            <Link href="/#hero" scroll={false} className="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
+              <h1 className="font-extrabold text-2xl text-blue-900">IDEAM</h1>
+            </Link>
+            <button
+              className="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 text-gray-600 hover:text-gray-800 transition duration-200"
+              onClick={handleClick}
+              aria-expanded={isOpen}
+              aria-label="Close menu"
+            >
+              <svg className="h-6 w-6 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M18.278 16.864a1 1 0 0 1-1.414 1.414l-4.829-4.828-4.828 4.828a1 1 0 0 1-1.414-1.414l4.828-4.829-4.828-4.828a1 1 0 0 1 1.414-1.414l4.829 4.828 4.828-4.828a1 1 0 1 1 1.414 1.414l-4.828 4.829 4.828 4.828z"
+                />
+              </svg>
+            </button>
+          </div>
+          {/* Mobile Menu Links */}
+          <div className="flex flex-col space-y-4">
+            <NavLinks onLinkClick={handleLinkClick} />
           </div>
         </div>
       </div>
