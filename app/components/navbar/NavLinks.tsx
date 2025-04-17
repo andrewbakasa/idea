@@ -46,7 +46,7 @@ const NavLinks: React.FC<NavLinksProps> = ({ onLinkClick }) => {
       <Link
         href="/demo#demo"
         onClick={(e) => { e.preventDefault(); handleNavigate("/demo#demo"); }}
-        className="text-white bg-blue-900 hover:bg-blue-800 inline-flex items-center justify-center w-auto px-6 py-3 shadow-xl rounded-xl block py-2"
+        className="text-gray-500 hover:bg-gray-300 inline-flex items-center justify-center w-auto px-6 py-3 shadow-xl rounded-xl block py-2"
       >
         Demo our products
       </Link>

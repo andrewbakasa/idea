@@ -39,6 +39,7 @@
     "draftjs-to-markdown": "^0.6.0",
     "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
+    "groq-sdk": "^0.19.0",
     "js-cookie": "^3.0.5",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.309.0",

@@ -4,6 +4,7 @@ import img from '/public/images/web.svg';
 import img2 from '/public/images/app.svg';
 import img3 from '/public/images/hosting.svg';
 import img4 from '/public/images/consultation.svg';
+import img_cad from '/public/images/cad_1.svg';
 
 interface ServicesProps {} // Define props if needed, otherwise use an empty interface
 
@@ -29,7 +30,7 @@ const Services: React.FC<ServicesProps> = () => {
                 <Image
                   alt="card img"
                   className="rounded-t group-hover:scale-[1.15] transition duration-1000 ease-in-out"
-                  src={img}
+                  src={img_cad}
                 />
                 <h2 className="font-semibold my-4 text-2xl text-center">CAD , Modelling & Simulation</h2>
                 <p className="text-md font-medium">
