@@ -32,6 +32,7 @@ const UsersClient: React.FC<UsersClientProps> = ({
   const [filterUsers, setfilterUsers] = useState(users);
   
   
+  
   //Cookies.set('originString', 'projects')
   useEffect(() => {
     if (searchTerm !== "") {
@@ -63,7 +64,7 @@ const UsersClient: React.FC<UsersClientProps> = ({
 
  // if its empty allow also:
  //this is just testing
-  const isAllowedAccess = currentUser?.roles.filter((role) =>
+  const isAllowedAccess = currentUser?.roles.filter((role: string) =>
                                           (//Outer bracket ::forEach user role  
                                               //Search Card  within the List
                                               allowedRoles.some((y)=>(// Allowed Roles
@@ -93,7 +94,7 @@ let title_ =  `Users ${filterUsers.length} of ${users.length}`
         />
         <div className="flex flex-row ">
             <Search 
-                handleSearch ={handleSearch} 
+                //handleSearch ={handleSearch} 
                 setSearchTerm={setSearchTerm}               
                 placeholderText={"Filter Users..."}
                 searchTerm = {searchTerm} />  

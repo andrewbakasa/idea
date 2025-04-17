@@ -40,7 +40,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     if (!listToCopy) {
       return { error: "List not found" };
     }
-
+// get tail list...
     const lastList = await prisma.list.findFirst({
       where: { boardId },
       orderBy: { order: "desc" },
@@ -57,6 +57,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         userId: listToCopy.userId,
         cards: {
           createMany: {
+            //map into array of cards
             data: listToCopy.cards.map((card) => ({
               title: card.title,
               description: card.description,

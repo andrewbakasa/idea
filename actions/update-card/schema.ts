@@ -1,6 +1,12 @@
 import { z } from "zod";
 
 export const UpdateCard = z.object({
+  tagIDs: z.optional(
+    z.array(z.string())
+  ),
+  taggedUsers: z.optional(
+    z.array(z.string())
+  ),
   boardId: z.string(),
   dueDate: z.optional(
     z.date({

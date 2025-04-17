@@ -1,4 +1,4 @@
-import { Board, Listing, Reservation, User, List, Card } from "@prisma/client";
+import { Board, Listing, Reservation, User, List, Card, Tag, Asset, Failure, FailureTag, AssetCategory, BoardView, CardImage } from "@prisma/client";
 
 export type SafeListing = Omit<Listing, "createdAt"> & {
   createdAt: string;
@@ -52,7 +52,8 @@ export type SafeListWithBoard ={
       active: boolean;
   }[];
   createdAt: string;
-  updatedAt: string;
+  updatedAt: string;    
+  //views:number;
 }
 
 export type SafeCardWithBoard= {
@@ -65,7 +66,8 @@ export type SafeCardWithBoard= {
   list_title: string;
   owner_email: string;
   createdAt: string;
-  updatedAt: string;
+  updatedAt: string;  
+  //views:number;
 }
 
 export type SafeBoard = Omit<
@@ -75,9 +77,41 @@ export type SafeBoard = Omit<
   createdAt: string;
   updatedAt: string;
   lists: SafeList [];
-  user_image:string;
+  user_image:string;  
+  views:number;
+  userslist:string[];
 };
 
+export type SafeFailure = Omit<
+  Failure, 
+  "createdAt" | "updatedAt" 
+> & {
+  createdAt: string;
+  updatedAt: string;
+};
+export type SafeAsset = Omit<
+  Asset, 
+  "createdAt" | "updatedAt" 
+> & {
+  createdAt: string;
+  updatedAt: string;
+ // lists: SafeList [];
+  failures:SafeFailure[]
+ // user_image:string;
+};
+export type SafeCardMedia = Omit<
+  CardImage, 
+  "createdAt"  
+> & {
+  createdAt: string;
+  card:SafeCard;
+  listTitle:string,
+  bordTitle: string,
+  boardCreatedAt: string, // Handle null
+  boardUpdatedAt: string, // Handle null
+}
+
+export type cardWithImageList ={card: Card, imageList: CardImage[]}
 
 
 export type SafeUser = Omit<
@@ -87,4 +121,28 @@ export type SafeUser = Omit<
   createdAt: string;
   updatedAt: string;
   emailVerified: string | null;
+};
+
+export type SafeTag = Omit<
+  Tag,
+  "createdAt" | "updatedAt" 
+> & {
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type SafeFailureTag = Omit<
+  FailureTag,
+  "createdAt" | "updatedAt" 
+> & {
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type SafeAssetCategory = Omit<
+  AssetCategory,
+  "createdAt" | "updatedAt" 
+> & {
+  createdAt: string;
+  updatedAt: string;
 };

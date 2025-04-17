@@ -34,12 +34,13 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     });
     //Admin has express write
     if (child && 
-      ((child.board.userId==owner_id)|| currentUser.isAdmin)){
-   // if (child && child.board.userId==owner_id) {
-      // delete child data
-      // list =  await prisma.list.delete({
-      //     where: { id: child.id },
-      // });
+      // ((child.board?.userId==owner_id)|| currentUser.isAdmin)){
+         ((child.board?.userId==owner_id)|| currentUser.isAdmin   ||(child?.userId==owner_id))){
+          /* 
+           Owner of Board , owner of List,  and admin have right to deleted or update card
+          
+          */
+       
       list=  await prisma.list.update({
           where: { id: child.id },
           data: {  active:false },

@@ -14,7 +14,7 @@ export async function GET(
     //   return new NextResponse("Unauthorized", { status: 401 });
     // }
 
-    const card = await prisma.card.findUnique({
+    const card = await prisma.card.findMany({// removedunique
       where: {
         id: params.cardId,
         // list: {
@@ -28,7 +28,20 @@ export async function GET(
           select: {
             title: true,
           },
+       },
+       taggedUsers: {
+        include: {
+          user: {
+            select: {
+              // Include fields you want from the User model
+              id: true,
+              name: true,
+              email: true,
+              // ... other fields
+            },
+          },
         },
+      },
       },
     });
 

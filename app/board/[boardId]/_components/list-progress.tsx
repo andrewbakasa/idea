@@ -3,7 +3,7 @@
 import { toast } from "sonner";
 import { List } from "@prisma/client";
 import { useEventListener } from "usehooks-ts";
-import { useState, useRef, ElementRef } from "react";
+import { useState, useRef, ElementRef, useEffect } from "react";
 
 import { useAction } from "@/hooks/use-action";
 import { updateList } from "@/actions/update-list-percent";
@@ -29,7 +29,16 @@ export const ListProgress = ({
  
   
   //const [percent, setPercent] = useState(data.percent);
-  setPercent(data.percent)// initial
+  //setPercent(data.percent)// initial
+  /* Maximum update depth exceeded. This can happen when a component repeatedly calls setState 
+  inside componentWillUpdate or componentDidUpdate. 
+  React limits the number of nested updates to prevent infinite loops.
+  ----- I replace this code  with the UseEffect down  on this datw Wednesdasy 08 January 2025 @1308hrs in Workshopes Enggeer Office Mutare NRZ
+  */
+  useEffect(() => {
+    setPercent(data.percent);
+  }, [data.percent]);
+
   const [isEditing, setIsEditing] = useState(false);
 
   const formRef = useRef<ElementRef<"form">>(null);

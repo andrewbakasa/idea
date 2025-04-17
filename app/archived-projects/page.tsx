@@ -5,6 +5,7 @@ import ClientOnly from "../components/ClientOnly";
 import getCurrentUser from "../actions/getCurrentUser";
 import ProjectsClient from "./ProjectsClient";
 import getArchivedBoards from "../actions/getArchivedBoards";
+import getTagNames from "../actions/getTagNames";
 
 
 const ProjectsPage = async () => {
@@ -23,6 +24,7 @@ const ProjectsPage = async () => {
 
 
   const boards = await getArchivedBoards();
+  const tagNames =await getTagNames()
  
 
   if (boards.length === 0) {
@@ -40,6 +42,8 @@ const ProjectsPage = async () => {
     <ClientOnly>
       <ProjectsClient
         boards={boards}
+        // tagNames ={tagNames}
+      
         currentUser={currentUser}
       />
     </ClientOnly>

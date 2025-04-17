@@ -6,23 +6,36 @@ import { Button } from "@/components/ui/button";
 import { useProModal } from "@/hooks/use-pro-modal";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useAction } from "@/hooks/use-action";
-import { stripeRedirect } from "@/actions/stripe-redirect";
+// import { stripeRedirect } from "@/actions/stripe-redirect";
 import { toast } from "sonner";
+import { CardWithList } from "@/types";
 
+
+// interface DescriptionProps {
+//   data: CardWithList;
+//   boardId:string;
+//   setActivityViewMode:(value:boolean) => void;
+// };
+
+// export const ProModal = ({
+//   data,
+//   boardId,
+//   setActivityViewMode
+// }: DescriptionProps) => {
 export const ProModal = () => {
   const proModal = useProModal();
 
-  const { execute, isLoading } = useAction(stripeRedirect, {
-    onSuccess: (data) => {
-      window.location.href = data;
-    },
-    onError: (error) => {
-      toast.error(error);
-    }
-  });
+  // const { execute, isLoading } = useAction(stripeRedirect, {
+  //   onSuccess: (data) => {
+  //     window.location.href = data;
+  //   },
+  //   onError: (error) => {
+  //     toast.error(error);
+  //   }
+  // });
 
   const onClick = () => {
-    execute({});
+   // execute({});
   };
   
   return (
@@ -55,7 +68,7 @@ export const ProModal = () => {
             </ul>
           </div>
           <Button
-            disabled={isLoading}
+            disabled={true }//isLoading}
             onClick={onClick}
             className="w-full"
             variant="primary"

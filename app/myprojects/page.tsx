@@ -5,12 +5,15 @@ import ClientOnly from "../../app/components/ClientOnly";
 import getCurrentUser from "../../app/actions/getCurrentUser";
 import ProjectsClient from "./ProjectsClient";
 import getMyBoards from "../actions/getMyBoards";
-//import { useOriginSourceUrl } from "@/hooks/use-origin-source";
+import getTagNames from "../actions/getTagNames";
+import getUserNames from "../actions/getUserNames";
 
 
 const ProjectsPage = async () => {
   const currentUser = await getCurrentUser();
-
+  const tagNames =await getTagNames()
+  const userNames =await getUserNames()
+ 
   
 
   if (!currentUser) {
@@ -23,10 +26,9 @@ const ProjectsPage = async () => {
       </ClientOnly>
     );
   }
-
-  //const reservations = await getReservations({ userId: currentUser.id });
-  const boards = await getMyBoards();
-
+  let boards:any
+   boards = await getMyBoards();
+   console.log('From DB',boards)
 
   
   return (
@@ -35,6 +37,9 @@ const ProjectsPage = async () => {
         boards={boards}
         currentUser={currentUser}
         origin= 'myprojects'
+        tagNames ={tagNames}
+        userNames ={userNames}
+      
       />
     </ClientOnly>
   );

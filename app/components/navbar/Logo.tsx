@@ -18,7 +18,7 @@ const Logo: React.FC<NavbarProps> = ({
     <Image
       onClick={() => router.push('/')}
       className={
-        cn("cursor-pointer",
+        cn("cursor-pointer shadow-lg",
        // currentUser?.isAdmin  ? "hidden md:block" : "",
       )}
       //src="/images/logo.png" 

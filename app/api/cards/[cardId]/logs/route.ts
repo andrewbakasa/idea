@@ -20,6 +20,7 @@ export async function GET(
         // orgId,
         entityId: params.cardId,
         entityType: ENTITY_TYPE.CARD,
+        
       },
       orderBy: {
         createdAt: "desc",
@@ -32,3 +33,12 @@ export async function GET(
     return new NextResponse("Internal Error", { status: 500 });
   }
 };
+
+
+// const cardsToreorder = await prisma.card.findMany({
+//   where: {
+//     listId:id,
+//   },
+//   orderBy: { createdAt: "asc" },
+ 
+// });

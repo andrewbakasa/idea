@@ -24,6 +24,11 @@ import { useQueueStore } from "@/hooks/use-QueueState";
 import { useCompletedTaskStore } from "@/hooks/use-CompletedTaskState";
 import { useInverseStore } from "@/hooks/use-inverseState";
 import { uselistStore } from "@/hooks/use-listState";
+import { useCardReadModeStore } from "@/hooks/use-cardReadMode";
+import { useShowBGImageStore } from "@/hooks/use-showBGImage";
+import { useInverseTableStore } from "@/hooks/use-inverseTableState";
+import { useCollapseStore } from "@/hooks/use-collapseState";
+import { useShowMobileViewStore } from "@/hooks/use-mobileView";
 
 interface UserDataProps {
   data: SafeUser;
@@ -40,13 +45,19 @@ export const UserData = ({
   const [isChecked, setIsChecked] = useState(data.isAdmin||false); // Default checked
   const [isCheckedReadMode, setIsCheckedReadMode] = useState(data.cardReadMode||false); // Default checked
   
+  const [isCheckedShowMobileView, setIsCheckedShowMobileView] = useState(data.showMobileView||false); // Default checked
+  const [isCheckedShowBGImage, setIsCheckedShowBGImage] = useState(data.showBGImage||false); // Default checked
+  
   const [isCheckedNotificationToaster, setIsCheckedNotificationToaster] = useState(data.notificationToaster||false); // Default checked
   const [isCheckedTogglePendingTasksOrAll, setIsCheckedTogglePendingTasksOrAll] = useState(data.togglePendingTasksOrAll||false); // Default checked
   const [isCheckedToggleRecentTaskorAll, setIsCheckedToggleRecentTaskorAll] = useState(data.toggleRecentTaskorAll||false); // Default checked
   const [isCheckedToggleInverse, setIsCheckedToggleInverse] = useState(data.toggleInverse||false); // Default checked
+  const [isCheckedToggleInverseTable, setIsCheckedToggleInverseTable] = useState(data.toggleInverseTable||false); // Default checked
+  
   const [isCheckedEmptyListShow, setIsCheckedEmptyListShow] = useState(data.emptyListShow||false); // Default checked
   const [isCheckedShowMyProjectsOnLoad, setIsCheckedShowMyProjectsOnLoad] = useState(data.showMyProjectsOnLoad||false); // Default checked
   const [isCheckedToggleOverdueorAll, setIsCheckedToggleOverdueorAll] = useState(data.toggleOverdueorAll||false); // Default checked
+  const [isCheckedCollapseBoards, setIsCheckedCollapseBoards] = useState(data.collapseBoards||false); // Default checked
   
   
   const [isCheckedYscroll, setIsCheckedYScroll] = useState(data.cardYscroll||false); // Default checked
@@ -57,10 +68,19 @@ export const UserData = ({
   const {overdueState, setOverdueState}= useOverdueStore();
   const {recentQ, setRecentQueueState}= useQueueStore();
   const {completedTasks, setCompletedTaskState}= useCompletedTaskStore();
+  const {inverseTableState ,setInverseTableState}= useInverseTableStore();
   const {inverseState ,setInverseState}= useInverseStore();
+  
   const {listState ,setListState}= uselistStore();
   
   
+  const {readMode,setReadModeState}= useCardReadModeStore();
+  const {showMobileView, setShowMobileViewState}=useShowMobileViewStore();
+  
+  const {setCollapseState}=useCollapseStore()
+  const {showBGImage,setShowBGImageState}= useShowBGImageStore();
+
+
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsChecked(event.target.checked);
   };
@@ -69,6 +89,14 @@ export const UserData = ({
     setIsCheckedReadMode(event.target.checked);
   };
 
+  
+  const handleCheckboxShowMobileViewChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsCheckedShowMobileView(event.target.checked);
+  };
+
+  const handleCheckboxShowBGImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsCheckedShowBGImage(event.target.checked);
+  };
   
   const handleCheckboxNotificationToasterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsCheckedNotificationToaster(event.target.checked);
@@ -84,6 +112,9 @@ export const UserData = ({
   const handleCheckboxToggleInverseChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsCheckedToggleInverse(event.target.checked);
   };
+  const handleCheckboxToggleInverseTableChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsCheckedToggleInverseTable(event.target.checked);
+  };
   const handleCheckboxToggleOverdueorAllChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsCheckedToggleOverdueorAll(event.target.checked);
   };
@@ -93,6 +124,10 @@ export const UserData = ({
 
   const handleCheckboxShowMyProjectsOnLoadChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsCheckedShowMyProjectsOnLoad(event.target.checked);
+  };
+
+  const handleCheckboxCollapseBoardsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsCheckedCollapseBoards(event.target.checked);
   };
   const handleCheckboxYScrollChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsCheckedYScroll(event.target.checked);
@@ -108,13 +143,21 @@ export const UserData = ({
   const textareaRef = useRef<ElementRef<"textarea">>(null);
   const inputboxRef = useRef<ElementRef<"input">>(null);
   const checkboxReadModeRef = useRef<ElementRef<"input">>(null);
+  
+  const checkboxShowMobileViewRef = useRef<ElementRef<"input">>(null);
+  const checkboxShowBGImageRef = useRef<ElementRef<"input">>(null);
+  
   const checkboxNotificationToasterRef = useRef<ElementRef<"input">>(null);
   const checkboxTogglePendingTasksOrAllRef = useRef<ElementRef<"input">>(null);
   const checkboxToggleRecentTaskorAllRef = useRef<ElementRef<"input">>(null);
   const checkboxToggleOverdueorAllRef = useRef<ElementRef<"input">>(null);
   const checkboxToggleInverseRef = useRef<ElementRef<"input">>(null);
+  const checkboxToggleInverseTableRef = useRef<ElementRef<"input">>(null);
+  
   const checkboxEmptyListShowRef = useRef<ElementRef<"input">>(null);
   const checkboxShowMyProjectsOnLoadRef = useRef<ElementRef<"input">>(null);
+  const checkboxCollapseBoardsRef = useRef<ElementRef<"input">>(null);
+ 
  
   
   const checkboxYScrollRef = useRef<ElementRef<"input">>(null);
@@ -170,8 +213,16 @@ export const UserData = ({
       setCompletedTaskState(data.togglePendingTasksOrAll)
       setRecentQueueState(data.toggleRecentTaskorAll)
       setInverseState(data.toggleInverse)
+      setInverseTableState(data.toggleInverseTable)
+     
       setListState(data.emptyListShow)
       setOverdueState(data.toggleOverdueorAll)
+      setReadModeState(data.cardReadMode)
+      
+      setShowMobileViewState(data.showMobileView)
+      setCollapseState(data.collapseBoards)
+      setShowBGImageState(data.showBGImage)
+     
       //-------
       disableEditing();
     },
@@ -188,8 +239,13 @@ export const UserData = ({
     const userId = params?.userID as string;
     const isAdmin = Boolean(formData.get("isAdmin"));
     const isReadMode= Boolean(formData.get("cardReadMode"));
+    
+    const isShowMobileView= Boolean(formData.get("showMobileView"));
+
     const isYScroll= Boolean(formData.get("cardYscroll"));
     const isCardShowTitle= Boolean(formData.get("cardShowTitle"));
+    const isShowBGImage= Boolean(formData.get("showBGImage"));
+   
     const recentDays= Number(formData.get("recentDays"));
     const notificationToaster= Boolean(formData.get("notificationToaster"));
 
@@ -198,13 +254,20 @@ export const UserData = ({
     const toggleOverdueorAll= Boolean(formData.get("toggleOverdueorAll"))
  
     const toggleInverse= Boolean(formData.get("toggleInverse"));
+    
+    const toggleInverseTable= Boolean(formData.get("toggleInverseTable"));
+ 
     const emptyListShow= Boolean(formData.get("emptyListShow"));
     const showMyProjectsOnLoad= Boolean(formData.get("showMyProjectsOnLoad"));
+    const collapseBoards= Boolean(formData.get("collapseBoards"));
+   
    
     if (isCurrentLogInUserRecord){
         execute({
           id: data.id,
           cardReadMode:isReadMode,
+          showMobileView:isShowMobileView,
+          showBGImage:isShowBGImage,
           cardYscroll:isYScroll,
           cardShowTitle:isCardShowTitle,
           recentDays:recentDays,
@@ -213,8 +276,11 @@ export const UserData = ({
           toggleRecentTaskorAll:toggleRecentTaskorAll,
           toggleOverdueorAll:toggleOverdueorAll,
           toggleInverse:toggleInverse,
+          
+          toggleInverseTable:toggleInverseTable,
           emptyListShow:emptyListShow,
-          showMyProjectsOnLoad:showMyProjectsOnLoad
+          showMyProjectsOnLoad:showMyProjectsOnLoad,
+          collapseBoards:collapseBoards
         })
 
         
@@ -244,7 +310,7 @@ export const UserData = ({
   const convertToOptionArray = (values: string[]): MultiValue<Option> => {
     return values.map((value) => ({ value, label:value })); // Assuming value is the property name
   };
-  const [selectedValue, setSelectedValue] = useState<MultiValue<Option>>(convertToOptionArray(data.roles.map((option) => option)));
+  const [selectedValue, setSelectedValue] = useState<MultiValue<Option>>(convertToOptionArray(data.roles.map((option: any) => option)));
 
 
 const handleSelectChange = (newValue: MultiValue<Option>, actionMeta: ActionMeta<Option>) => {
@@ -254,7 +320,7 @@ const handleSelectChange = (newValue: MultiValue<Option>, actionMeta: ActionMeta
 
 let allowedRoles:String[]
 allowedRoles=['admin', 'manager']
-const isAllowedAccess = currentUser?.roles.filter((role) =>
+const isAllowedAccess = currentUser?.roles.filter((role: string) =>
                           (//Outer bracket ::forEach user role  
                               //Search Card  within the List
                               allowedRoles.some((y)=>(// Allowed Roles
@@ -446,10 +512,61 @@ const isAllowedAccess = currentUser?.roles.filter((role) =>
                       disabled={!isCurrentLogInUserRecord} />
                   <label htmlFor="checkbox">Toggle OverdueorAll</label>
                 </div>
+
+                <div className="space-x-2">
+                  <input 
+                      id="showBGImage" 
+                      name="showBGImage"
+                      type="checkbox" 
+                      ref={checkboxShowBGImageRef} 
+                      checked={isCheckedShowBGImage}
+                      onChange={handleCheckboxShowBGImageChange} 
+                      disabled={!isCurrentLogInUserRecord}/>
+                  <label htmlFor="checkbox">Show Background Image</label>
+                </div>
               
             </div> 
            
-            
+            <div className="flex md:flex-row flex-col justify-between">
+                <div className="space-x-2">
+                  <input 
+                      id="toggleInverseTable" 
+                      name="toggleInverseTable"
+                      type="checkbox" 
+                      ref={checkboxToggleInverseTableRef} 
+                      checked={isCheckedToggleInverseTable}
+                      onChange={handleCheckboxToggleInverseTableChange} 
+                      disabled={!isCurrentLogInUserRecord}/>
+                  <label htmlFor="checkbox">Toggle Inverse Table</label>
+                </div>
+
+                <div className="space-x-2">
+                  <input 
+                      id="collapseBoards" 
+                      name="collapseBoards"
+                      type="checkbox" 
+                      ref={checkboxCollapseBoardsRef} 
+                      checked={isCheckedCollapseBoards}
+                      onChange={handleCheckboxCollapseBoardsChange} 
+                      disabled={!isCurrentLogInUserRecord}/>
+                  <label htmlFor="checkbox">Collapse Boards[Mini-View-State]</label>
+                </div>
+            </div> 
+          
+          
+            <div className="flex md:flex-row flex-col justify-between">
+                <div className="space-x-2">
+                  <input 
+                      id="showMobileView" 
+                      name="showMobileView"
+                      type="checkbox" 
+                      ref={checkboxShowMobileViewRef} 
+                      checked={isCheckedShowMobileView}
+                      onChange={handleCheckboxShowMobileViewChange} 
+                      disabled={!isCurrentLogInUserRecord} />
+                  <label htmlFor="checkbox">Show Mobile View on Desktop</label>
+                </div>
+             </div>
             <Separator/>
             <div className="flex md:flex-row flex-col justify-between">
                 <div className="space-x-2">

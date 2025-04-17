@@ -5,13 +5,20 @@ import Image from "next/image";
 import { useCallback } from "react";
 import { TbPhotoPlus } from 'react-icons/tb'
 
+
+declare global {
+  var cloudinary: any
+}
+
+const uploadPreset = process.env.NEXT_PUBLIC_PRESET_NAME; // Access environment variable
+
 declare global {
   var cloudinary: any
 }
 //Under Settings Cloudinary menu
 //Upload menu
 //unassinged
-const uploadPreset = "ictrlxcr";
+
 
 interface ImageUploadProps {
   onChange: (value: string) => void;
@@ -31,7 +38,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       onUpload={handleUpload} 
       uploadPreset={uploadPreset}
       options={{
-        maxFiles: 1
+        maxFiles: 5
       }}
     >
       {({ open }) => {

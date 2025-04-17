@@ -89,7 +89,7 @@ const ListsClient: React.FC<ListsClientProps> = ({
           subtitle="Click to restore project"
         />
        <Search 
-          handleSearch ={handleSearch} 
+         // handleSearch ={handleSearch} 
           setSearchTerm={setSearchTerm}               
           searchTerm = {searchTerm} />
      </div>

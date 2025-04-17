@@ -2,7 +2,6 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 import { useOverdueStore } from '@/hooks/useOverduState';
 import { cn } from '@/lib/utils';
@@ -16,6 +15,9 @@ import { uselistStore } from '@/hooks/use-listState';
 import { Button } from '@/components/ui/button';
 import { useAction } from '@/hooks/use-action';
 import { updateUser } from '@/actions/update-user';
+import { useInverseTableStore } from '@/hooks/use-inverseTableState';
+import { useCollapseStore } from '@/hooks/use-collapseState';
+import { useShowMobileViewStore } from '@/hooks/use-mobileView';
 interface NavbarProps {
   currentUser?: SafeUser | null;
 }
@@ -29,18 +31,27 @@ const Search: React.FC<NavbarProps> = ({
   const {recentQ, setRecentQueueState}= useQueueStore();
   const {completedTasks, setCompletedTaskState}= useCompletedTaskStore();
   const {inverseState ,setInverseState}= useInverseStore();
+  const {collapseState,setCollapseState}=useCollapseStore();
+
+  const {inverseTableState ,setInverseTableState}= useInverseTableStore();
+  const {showMobileView,setShowMobileViewState}=useShowMobileViewStore();
+
   const {listState ,setListState}= uselistStore();
   
   const [isloading, setIsLoading]=useState(true);
   const router = useRouter();
 
   useEffect(() => {
+      
+    setInverseState(currentUser?.toggleInverse||false)
     
-  setInverseState(currentUser?.toggleInverse||false)
-  setRecentQueueState(currentUser?.toggleRecentTaskorAll||false)
-  setCompletedTaskState(currentUser?.togglePendingTasksOrAll||false)
-  setListState(currentUser?.emptyListShow||false)
-  setOverdueState(currentUser?.toggleOverdueorAll||false)
+    setInverseTableState(currentUser?.toggleInverseTable||false)
+    setRecentQueueState(currentUser?.toggleRecentTaskorAll||false)
+    setCompletedTaskState(currentUser?.togglePendingTasksOrAll||false)
+    setListState(currentUser?.emptyListShow||false)
+    setOverdueState(currentUser?.toggleOverdueorAll||false) 
+    //use current setting..... deactivate 11 September 2024 for testing only   
+    //setCollapseState(currentUser?.collapseBoards||false)
   }, []); // Empty dependency array ensures fetching on mount
 
   const isMobile =  useIsMobile();
@@ -72,16 +83,25 @@ const Search: React.FC<NavbarProps> = ({
   },[])
 
   const prefStateHandler =()=>{
-    // console.log('mapstate',mapState)
-    if(path == '/preference'){
+    if(path == '/pinned'){
       router.replace('/')
     
     }else{
-      router.replace('/preference')
+      // do nothing
+      router.replace('/pinned')
     }
    
   }
-  
+  const taggedStateHandler =()=>{
+    if(path == '/tagged'){
+      router.replace('/')
+    
+    }else{
+      // do nothing
+      router.replace('/tagged')
+    }
+   
+  }
   const overdueStateHandler =()=>{
     setOverdueState(!overdueState);
   }
@@ -96,8 +116,17 @@ const Search: React.FC<NavbarProps> = ({
   const inverseStateHandler =()=>{
     setInverseState(!inverseState);
   }
+  const inverseTableStateHandler =()=>{
+    setInverseTableState(!inverseTableState);
+  }
+  const showMobileViewStateHandler =()=>{
+    setShowMobileViewState(!showMobileView);
+  }
   const listStateHandler =()=>{
     setListState(!listState);
+  }
+  const collapseHandler =()=>{
+    setCollapseState(!collapseState);
   }
   useEffect(()=>{
     if (isMobile==true && currentUser?.notificationToaster==true){
@@ -108,7 +137,7 @@ const Search: React.FC<NavbarProps> = ({
        {',  '}<Button onClick ={HideStateHandler} className="h-auto w-auto px-1 text-green-700 text-[12px]" variant="outline">Hide</Button>
       </span> )
     }
-  },[recentQ,inverseState,completedTasks,overdueState,listState])
+  },[recentQ,inverseState,completedTasks,overdueState,listState, inverseTableState])
   return ( 
     <div
      
@@ -138,59 +167,110 @@ const Search: React.FC<NavbarProps> = ({
               "
             >
               
-                    {/* <div className='p-6 px-10 flex justify-between shadow-sm fixed top-0 w-full z-10 bg-white'> */}
                     <div className='flex gap-3 items-center'>
                       {
                       isloading==false?
                       (
-                        <div className='flex gap-1'>
+                        <div className={cn('flex',isMobile?'gap-[0px]':'gap-1')}>
                           <Image 
                             src={completedTasks==true?'/taskAA.svg':'/taskBB.svg'} 
-                            width={35}
-                            height={35} alt='map' 
-                            className={cn("h-auto ", completedTasks==true?'border bg-gray-100':'' )}                      
+                            width={isMobile?29:35}
+                            height={isMobile?29:35} alt='map' 
+                            className={cn("h-auto shadow-lg", completedTasks==true?'border bg-gray-100':'' )}                      
                             onClick={completedTasksStateHandler}
                           />
                   
                           <Image 
                             src={recentQ==true?'/addA.svg':'/addB.svg'} 
-                            width={35}
-                            height={35} alt='map' 
-                            className={cn("h-auto ", recentQ==true?'border bg-gray-100':'' )}                      
+                            width={isMobile?29:35}
+                            height={isMobile?29:35} alt='map' 
+                            className={cn("h-auto shadow-lg", recentQ==true?'border bg-gray-100':'' )}                      
                             onClick={recentQueueStateHandler}
                           />
                   
                           <Image 
                             src={overdueState==true?'/timerA.svg':'/timerB.svg'} 
-                            width={35}
-                            height={35} alt='overdue' 
-                            className={cn("h-auto  ",overdueState==true?'border bg-gray-100':'' )}                      
+                            width={isMobile?29:35}
+                            height={isMobile?29:35} alt='overdue' 
+                            className={cn("h-auto shadow-lg",overdueState==true?'border bg-gray-100':'' )}                      
                             onClick={overdueStateHandler}
                           />
                           <Image 
                             src={inverseState==true?'/invertedA.svg':'/invertedB.svg'} 
-                            width={35}
-                            height={35} alt='inverse' 
-                            className={cn("h-auto  ",inverseState==true?'border bg-gray-100':'' )}                      
+                            width={isMobile?29:35}
+                            height={isMobile?29:35} alt='inverse' 
+                            className={cn("h-auto shadow-lg",inverseState==true?'border bg-gray-100':'' )}                      
                             onClick={inverseStateHandler}
                           />
                           <Image 
                             src={listState==true?'/lstA.svg':'/lstB.svg'} 
-                            width={35}
-                            height={35} alt='list' 
-                            className={cn("h-auto  ",listState==true?'border bg-gray-100':'' )}                      
+                            width={isMobile?29:35}
+                            height={isMobile?29:35} alt='list' 
+                            className={cn("h-auto shadow-lg",listState==true?'border bg-gray-100':'' )}                      
                             onClick={listStateHandler}
                           />
                        
-                          <Image 
-                              src={path == '/preference'?'/star2.svg':'/star.svg'} 
-                              width={35}
-                              height={35} alt='likes' 
-                              className={cn("h-auto ",path == '/preference'?'border bg-gray-100':'' )}  
+                          <div className="relative"> 
+                            <Image 
+                              src={path == '/pinned'?'/pinB.svg':'/pinA.svg'} 
+                              width={isMobile?29:35}
+                              height={isMobile?29:35} alt='likes' 
+                              className={cn("h-auto shadow-lg",path == '/pinned'?'border bg-gray-100':'z-50' )}  
                               onClick={prefStateHandler}
                                               
                           />
-                      
+                         
+                            <div 
+                             className="absolute top-[-10px] right-[-10px] p-2 bg-inherit text-red-400 rounded-full">
+                                <span className='text-sm '
+                                 onClick={prefStateHandler}
+                             
+                                >{currentUser?.favoriteIds.length}</span>
+                            </div>
+                          </div>
+                       {/* not true */}
+
+                       <div className="relative"> 
+                            <Image 
+                              src={path == '/tagged'?'/mailB.svg':'/mailA.svg'} 
+                              width={isMobile?29:35}
+                              height={isMobile?29:35} alt='likes' 
+                              className={cn("h-auto shadow-lg",path == '/tagged'?'border bg-gray-100':'z-50' )}  
+                              onClick={taggedStateHandler}
+                                              
+                          />
+                      <div 
+                             className="absolute top-[-10px] right-[-10px] p-2 bg-inherit text-red-400 rounded-full">
+                                <span className='text-sm '
+                                 onClick={taggedStateHandler}
+                             
+                                >{currentUser?.taggedInboxIds.length}</span>
+                            </div>
+                          </div>
+                       
+                       {isMobile!==true && showMobileView!==true && <Image 
+                            src={inverseTableState==true?'/filterA.svg':'/filterB.svg'} 
+                            width={isMobile?29:35}
+                            height={isMobile?29:35} alt='inverse' 
+                            className={cn("h-auto shadow-lg ",inverseTableState==true?'border bg-gray-100':'' )}                      
+                            onClick={inverseTableStateHandler}
+                          />
+                       }
+                       {isMobile!==true  && <Image 
+                            src={showMobileView==true?'/mobileA.svg':'/mobileB.svg'} 
+                            width={isMobile?29:35}
+                            height={isMobile?29:35} alt='inverse' 
+                            className={cn("h-auto shadow-lg ",inverseTableState==true?'border bg-gray-100':'' )}                      
+                            onClick={showMobileViewStateHandler}
+                          />
+                       }
+                      <Image 
+                            src={collapseState==true?'/collapse.svg':'/collapseA.svg'} 
+                            width={isMobile?29:35}
+                            height={isMobile?29:35} alt='list' 
+                            className={cn("h-auto shadow-lg",collapseState==true?'border bg-gray-100':'' )}                      
+                            onClick={collapseHandler}
+                          />
                         </div>
                       )
                       :
@@ -213,13 +293,15 @@ const Search: React.FC<NavbarProps> = ({
                             isloading==false?
                             (
                               <>
-                                <li className='hover:text-primary font-medium text-sm cursor-pointer' >
+                                <li className='hover:text-primary font-medium text-sm cursor-pointer shadow-md' >
                                   {completedTasks?<span className='underline text-red-800'>{inverseState?'Completed-Tasks':`Pending-Tasks`}</span>:'ALL-Tasks'}
                                   {',  '}{recentQ ?<span className='underline text-red-800'>{inverseState?'Old-Addition':`Recent-Addition`}{` ${currentUser?.recentDays}`}</span>:'ALL-Addition'}
                                   {',  '}{overdueState?<span className='underline text-red-800'>{inverseState?'Non-Overdue':'OverDue'}</span>:'All-Time'}
                                   {',  '}{listState?<span className='underline text-red-800'>{'Lists-ON'}</span>:'Lists-OFF'}
+                                  {',  '}{showMobileView? 'Mobile-View':inverseTableState?<span className='underline text-red-800'>{'View-Mini'}</span>:'View-Wide'}
                               
-                                  {path == '/preference'?<span className='underline text-red-800'>Preference</span>:''}
+                                  {path == '/pinned'?(<>{", "}<span className='underline text-red-800'>{'Pinned'}</span></>):''}
+                                  {/* /preference */}
                                 </li>
                               </>
                             )
@@ -243,3 +325,38 @@ const Search: React.FC<NavbarProps> = ({
 }
  
 export default Search;
+
+{/*
+
+import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { fetchInboxMessages } from './api'; // Assuming you have an API for fetching inbox messages
+
+function InboxImageComponent() {
+  const [totalInboxMessages, setTotalInboxMessages] = useState(0);
+
+  const { isLoading, isError, data } = useQuery(['inboxMessages'], () => fetchInboxMessages());
+
+  useEffect(() => {
+    if (data) {
+      setTotalInboxMessages(data.length); // Update total based on fetched data
+    }
+  }, [data]);
+
+  return (
+    <div className="relative">
+      <img src="your-image.jpg" alt="Inbox" className="w-full h-auto" />
+      <div className="absolute top-0 right-0 p-2 bg-gray-900 text-white rounded-full">
+        {isLoading ? (
+          <span>Loading...</span>
+        ) : isError ? (
+          <span>Error fetching inbox messages</span>
+        ) : (
+          <span>{totalInboxMessages}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default InboxImageComponent;*/}

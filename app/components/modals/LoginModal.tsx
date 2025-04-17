@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { signIn } from 'next-auth/react';
 import { 
@@ -20,13 +20,37 @@ import Input from "../inputs/Input";
 import Heading from "../Heading";
 import Button from "../Button";
 import { EyeIcon, EyeOffIcon} from "lucide-react";
+import { SafeUser } from "@/app/types";
+import { useCardReadModeStore } from "@/hooks/use-cardReadMode";
+import { useShowBGImageStore } from "@/hooks/use-showBGImage";
+import { useCollapseStore } from "@/hooks/use-collapseState";
 
-const LoginModal = () => {
+import { useCurrentUserStore } from "@/hooks/use-getCurrentUser";
+import { useAction } from "@/hooks/use-action";
+import { getCurrUser } from "@/actions/getcurrent-user";
+import { useLoginLatchStore } from "@/hooks/use-login";
+import { useShowMobileViewStore } from "@/hooks/use-mobileView";
+
+interface NavbarProps {
+  currentUser?: SafeUser | null;
+}
+
+const LoginModal: React.FC<NavbarProps> = ({
+  currentUser,
+}) => {
+  // const LoginModal = () => {
   const router = useRouter();
   const loginModal = useLoginModal();
   const registerModal = useRegisterModal();
   const [isLoading, setIsLoading] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const {setReadModeState}=useCardReadModeStore();
+  const {setShowBGImageState}=useShowBGImageStore();
+  const {setCollapseState}=useCollapseStore()
+  const { currentUserA, isLoadingCurrentUser, fetchCurrentUser } = useCurrentUserStore();
+  const { loginlatch, setLatchState } = useLoginLatchStore();
+  const {setShowMobileViewState}=useShowMobileViewStore();
+  
   const handleToggleVisibility = () => {
     setIsPasswordVisible(!isPasswordVisible);
   };
@@ -36,7 +60,71 @@ const LoginModal = () => {
   const pathname = usePathname();
   const isDeniedPage = pathname === '/denied';
 
-  //const currentPath = router.;
+ useEffect(()=>{
+  setReadModeState(currentUser?.cardReadMode||false); 
+  
+  setShowMobileViewState(currentUser?.showMobileView||false); 
+  setShowBGImageState(currentUser?.showBGImage||false)
+  // caters for google auth that doesnt have session ready
+  // toast(`n username change....${loginlatch}`)
+  console.log(`LoginModal 1....${loginlatch}`)
+  
+  if (loginlatch==false && currentUser){
+    //latches----
+    // toast('Latch triggered usseffect currentuser Chenge')
+    setCollapseState(currentUser?.collapseBoards||false) 
+    setLatchState(true)
+  }
+    console.log('currentUserA',currentUserA)
+ },[currentUser])
+
+ 
+ useEffect(()=>{
+  // console.log(`LoginModal 1....${loginlatch}`)
+  if (loginlatch==false && currentUser){
+    //latches----
+    // toast('Latch triggered usseffect 1')
+    setCollapseState(currentUser?.collapseBoards||false) 
+    setLatchState(true)
+  }
+},[])
+
+ useEffect(()=>{
+  //console.log('currentUserA: should not be empty useEffect:',currentUserA)
+ 
+  if(currentUserA?.length>0){
+
+    execute({email:currentUserA})
+  }
+  
+ },[currentUserA])
+ 
+
+  const { execute, fieldErrors } = useAction(getCurrUser, {
+    onSuccess: (data) => {
+      if (data){
+        console.log(`data:${data}  `)
+        setCollapseState(data?.collapseBoards || false); 
+      }   
+    },
+    onError: (error) => {
+      toast.error(error);
+    },
+  });
+  const handleAuthenticationChange = useCallback(async () => {
+    if (isLoadingCurrentUser) {
+      // Avoid unnecessary calls while user is loading
+      return;
+    }
+   console.log('in hande authenticationchange...')
+    try {
+      await fetchCurrentUser(); // Fetch and update currentUser
+    } catch (error) {
+      console.error('Error updating collapseState:', error);
+      toast.error('Error fetching user data'); // Inform user about the error
+    }
+  }, [currentUserA, isLoadingCurrentUser, fetchCurrentUser, setCollapseState]);
+
 
   const { 
     register, 
@@ -62,15 +150,8 @@ const LoginModal = () => {
           setGithubLabel('Authenticating...')
         }
        const result= await signIn(provider, { redirect: false })
-       console.log("Authentication error:", result)
-       if (!result?.error) {
-          // User successfully signed in, redirect to a specific page
-          // setIsLoading(false);
-          //router.push('/');
-        } else {
-          // setIsLoading(false);
-          // router.push('/');
-        }
+       //console.log("Authentication error:", result)
+       
     
     } catch (error) {
         // Handle error gracefully
@@ -81,16 +162,19 @@ const LoginModal = () => {
         },15000);
         if (provider =="google"){
           setGoogleLabel('Finalizing...')
+         
         }
         if (provider =="github"){
           setGithubLabel('Finalizing...')
+        
         }
+       
         router.push("/")   
     }
 };
 
   const onSubmit: SubmitHandler<FieldValues> = 
-  (data) => {
+   (data) => {
     setIsLoading(true);
 
     signIn('credentials', { 
@@ -101,8 +185,10 @@ const LoginModal = () => {
       setIsLoading(false);
 
       if (callback?.ok) {
-       // console.log('...',callback)
+        //console.log('...',callback)
         toast.success('Logged in');
+        handleAuthenticationChange(); // Update collapseState
+    
         //ONLY WHEN ON DENIED gO TO HOME PAGE
         if (isDeniedPage) {
           router.push("/")
@@ -114,6 +200,9 @@ const LoginModal = () => {
       if (callback?.error) {
         toast.error(callback.error);
       }
+      // if (callback?.ok) {
+      //   // ... other code
+      // }
     });
   }
 

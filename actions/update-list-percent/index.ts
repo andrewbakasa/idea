@@ -39,9 +39,12 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     //console.log("child", child)
     //admin has express write
     if (child && 
-      ((child.board.userId==owner_id) ||(child.userId==owner_id) || currentUser.isAdmin)){
-    //if (child && child.board.userId==owner_id) {
-      // Update child data
+      ((child.board?.userId==owner_id) ||(child?.userId==owner_id) || currentUser.isAdmin)){
+          /* 
+           Owner of Board , owner of List and admin have right to deleted or update card
+          
+          */
+       
       list=  await prisma.list.update({
           where: { id: child.id },
           data: {  percent },

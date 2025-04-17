@@ -60,6 +60,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(({
           className={cn(
             "text-sm px-2 py-1 h-7",
             className,
+            !disabled && 'flex-grow' 
           )}
           aria-describedby={`${id}-error`}
         />

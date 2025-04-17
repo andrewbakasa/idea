@@ -58,20 +58,9 @@ const { execute, fieldErrors } = useAction(updatePagSize, {
 
 
   return (
-    <div className="px-2 mt-1
-      mx-auto text-white fill-gray-400">
-      <div className="flex justify-between mb-2">
-        <div className="w-full flex items-center gap-1">
-          <SearchIcon />
-          <DebouncedInput
-            value={globalFilter ?? ""}
-            onChange={(value:string|number ) => setGlobalFilter(String(value))}
-            className="p-2 text-gray-700 bg-transparent outline-none border-b-2 w-1/5 focus:w-1/3 duration-300 border-indigo-500"
-            placeholder="Search all columns..."
-          />
-        </div>
-        <DownloadBtn data={data} fileName={"products"} />
-      </div>
+    <div 
+      className="px-2 mt-1  mx-auto text-black fill-gray-400"
+    >
       <table className="border border-gray-700 w-full text-left">
         <thead className="bg-indigo-600">
           {table.getHeaderGroups().map((headerGroup) => (

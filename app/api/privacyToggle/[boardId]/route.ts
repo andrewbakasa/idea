@@ -16,7 +16,7 @@ export async function POST(
 
   if (!currentUser) {
     return NextResponse.error();
-  }
+  } 
 
   const { boardId } = params;
 
@@ -25,7 +25,7 @@ export async function POST(
   }
 
 
-  const user = await prisma.board.update({
+  const board = await prisma.board.update({
     where: {
       id: boardId,
       userId:currentUser.id// should not change attribute if not owner
@@ -35,7 +35,7 @@ export async function POST(
     }
   });
 
-  return NextResponse.json(user);
+  return NextResponse.json(board);
 }
 
 export async function DELETE(
@@ -55,7 +55,7 @@ export async function DELETE(
   }
 
 
-  const user = await prisma.board.update({
+  const board = await prisma.board.update({
     where: {
       id: boardId,
       userId:currentUser.id// should not change attribute if not owner
@@ -65,5 +65,5 @@ export async function DELETE(
     }
   });
 
-  return NextResponse.json(user);
+  return NextResponse.json(board);
 }

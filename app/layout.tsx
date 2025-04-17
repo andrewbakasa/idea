@@ -1,13 +1,9 @@
 // "use client"
 import { Nunito } from 'next/font/google'
 
-//import Navbar from './components/navbar/Navbar';
-
-//import NavBar from './navbar/NavBar2';
+import Navbar from './components/navbar/Navbar';
 import LoginModal from './components/modals/LoginModal';
 import RegisterModal from './components/modals/RegisterModal';
-// import SearchModal from './components/modals/SearchModal';
-// import RentModal from './components/modals/RentModal';
 
 import ToasterProvider from './providers/ToasterProvider';
 import { ModalProvider } from "@/components/providers/modal-provider";
@@ -18,7 +14,6 @@ import ClientOnly from './components/ClientOnly';
 import getCurrentUser from './actions/getCurrentUser';
 import { Toaster } from "sonner";
 import { cn } from '@/lib/utils';
-// import NavBar from './components/navbar/NavBar2';
 // import usePaddingState from './hooks/usePaddingState';
 export const metadata = {
   title: 'PM',
@@ -53,13 +48,12 @@ export default async function RootLayout({
           <QueryProvider>
               <ToasterProvider />
               <Toaster />
-              <LoginModal />
+              <LoginModal currentUser={currentUser}/>
              <RegisterModal />
               {/* <SearchModal /> */}
               {/* <RentModal />  */}
               <ModalProvider />
-              {/* <Navbar currentUser={currentUser} /> */}
-              {/* <NavBar />  */}
+              <Navbar currentUser={currentUser} />
               <div className={cn("pb-5 h-full",paddingState)}>
                   {children}
               </div>

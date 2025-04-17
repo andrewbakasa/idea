@@ -2,7 +2,6 @@ import { notFound, redirect } from "next/navigation";
 
 import prisma from "@/app/libs/prismadb";
 
-//import { BoardNavbar } from "./_components/board-navbar";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import ClientOnly from "@/app/components/ClientOnly";
 import EmptyState from "@/app/components/EmptyState";

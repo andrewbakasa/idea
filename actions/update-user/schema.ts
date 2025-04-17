@@ -8,6 +8,12 @@ export const UpdateUser = z.object({
   cardReadMode: z.optional(
     z.boolean(),
   ),
+  showMobileView: z.optional(
+    z.boolean(),
+  ),
+  showBGImage: z.optional(
+    z.boolean(),
+  ),
   cardYscroll: z.optional(
     z.boolean(),
   ),
@@ -29,11 +35,17 @@ export const UpdateUser = z.object({
   toggleInverse: z.optional(
     z.boolean(),
   ),  
+  toggleInverseTable: z.optional(
+    z.boolean(),
+  ),
   emptyListShow: z.optional(
     z.boolean(),
   ),
   
   showMyProjectsOnLoad: z.optional(
+    z.boolean(),
+  ),
+  collapseBoards: z.optional(
     z.boolean(),
   ),
   roles: z.optional(

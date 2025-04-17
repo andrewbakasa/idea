@@ -11,6 +11,7 @@ import { InputType, ReturnType } from "./types";
 import { createAuditLog } from "@/lib/create-audit-log";
 import { ACTION, ENTITY_TYPE } from "@prisma/client";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { updateProgressStatus } from "@/lib/updatesTrigger";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
   const currentUser = await getCurrentUser();
@@ -40,17 +41,11 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     });
 
     if (child && 
-      ((child.list.board.userId==owner_id)|| currentUser.isAdmin)){
-   // if (child && child.list.board.userId==owner_id) {
-      // Update child data
-      // card=  await prisma.card.delete({
-      //     where: { id: child.id },
-      // });
-      // card = await prisma.card.deleteMany({
-      //   where: {
-      //     title: "Main objectives",
-      //   },
-      // });
+      ((child.list.board?.userId==owner_id)|| currentUser.isAdmin   ||(child?.userId==owner_id))){
+        /* 
+         Owner of Board , owner of List, owner of Card, and admin have right to deleted or update card
+        
+        */
       card=  await prisma.card.update({
         where: { id: child.id },
         data: {  active:false },
@@ -60,6 +55,10 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         entityId: card.id ,
         entityType: ENTITY_TYPE.CARD,
         action: ACTION.DELETE,
+      })
+
+      await updateProgressStatus({
+        boardId:boardId 
       })
  
     }else {

@@ -40,7 +40,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 
     //Admin has express write
     if (child && 
-      ((child.userId==owner_id)|| currentUser.isAdmin)){
+      ((child?.userId==owner_id)|| currentUser.isAdmin)){
 
      //toggle
       board=  await prisma.board.update({

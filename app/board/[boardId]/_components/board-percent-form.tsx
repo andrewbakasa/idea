@@ -1,7 +1,7 @@
 "use client";
 
 import { toast } from "sonner";
-import { ElementRef, useRef, useState } from "react";
+import { ElementRef, useEffect, useRef, useState } from "react";
 import { Board } from "@prisma/client";
 import { FormInput } from "@/components/form/form-input";
 import { updateBoard } from "@/actions/update-board-percent";
@@ -34,7 +34,15 @@ export const BoardPercentForm = ({
   const inputRef = useRef<ElementRef<"input">>(null);
 
   //const [percent, setPercent] = useState(data.percent);
-  setPercent(data.percent)// initial
+  // setPercent(data.percent)// initial 
+  /* Maximum update depth exceeded. This can happen when a component repeatedly calls setState 
+  inside componentWillUpdate or componentDidUpdate. 
+  React limits the number of nested updates to prevent infinite loops.
+  ----- I replace this code  with the UseEffect down  on this datw Wednesdasy 08 January 2025 @1308hrs in Workshopes Enggeer Office
+  */
+  useEffect(() => {
+    setPercent(data.percent);
+  }, [data.percent]);
   const [isEditing, setIsEditing] = useState(false);
 
   const enableEditing = () => {
@@ -97,3 +105,7 @@ export const BoardPercentForm = ({
   </div>
   );
 };
+// function useEffect(arg0: () => void, arg1: number[]) {
+//   throw new Error("Function not implemented.");
+// }
+

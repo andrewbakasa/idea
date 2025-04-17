@@ -11,6 +11,7 @@ import { createSafeAction } from "@/lib/create-safe-action";
 import { CreateCard } from "./schema";
 import { InputType, ReturnType } from "./types";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { updateProgressStatus } from "@/lib/updatesTrigger";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
   const currentUser = await getCurrentUser();
@@ -62,6 +63,10 @@ const handler = async (data: InputType): Promise<ReturnType> => {
       entityType: ENTITY_TYPE.CARD,
       action: ACTION.CREATE,
     });
+    
+    await updateProgressStatus({
+      boardId:boardId 
+    })
   } catch (error) {
     return {
       error: "Failed to create."

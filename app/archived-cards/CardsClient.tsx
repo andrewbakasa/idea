@@ -78,9 +78,10 @@ const CardsClient: React.FC<CardsClientProps> = ({
         <Heading
           title="Archived Projects"
           subtitle="Click to restore project"
+          
         />
        <Search 
-          handleSearch ={handleSearch} 
+         // handleSearch ={handleSearch} 
           setSearchTerm={setSearchTerm}               
           searchTerm = {searchTerm} />
      </div>

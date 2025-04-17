@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 import { useCallback, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -8,22 +9,21 @@ import Container from "../components/Container";
 import Link from "next/link";
 import { FormPopover } from "../components/form/form-popover";
 import { Hint } from "../components/hint";
-import { HelpCircle } from "lucide-react";
+import { HelpCircle, TagsIcon } from "lucide-react";
 import PrivacyButton from "../components/PrivacyButton";
 import { redirect } from "next/navigation";
 import { useWindowSize } from "@/hooks/use-screenWidth";
 import ProgressBar from "@ramonak/react-progress-bar";
 import Cookies from 'js-cookie';
 import SaveExcelMutliple from "../components/SaveExcelMultiple";
-import { areDatesSimilar, cn, getCardsFromSafeBoard, getColorFromPercent, getDateTodayYesterdayORFormatedDate, 
-         getLatestCard, isNumber, sortDates } from "@/lib/utils";
+import { areDatesSimilar, cn, findLabelByValue, getCardsFromSafeBoard, getColorFromPercent, getDateTodayYesterdayORFormatedDate, 
+         getLabelsAndValuesFromValues, 
+         getLabelsFromValues, 
+         getLatestCard, getValuesFromLabels, isNumber, sortDates } from "@/lib/utils";
 import ReactPaginate from "react-paginate";
 import TanStackTable from "../components/TanstackTable";
-import { getTextFromEditor3} from "@/components/modals/card-modal/description";
 import { createColumnHelper } from "@tanstack/react-table";
 import useIsMobile from "../hooks/isMobile";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
-// import moment from "moment";
 import { toast } from "sonner";
 import { CompositeDecorator, DraftDecorator, Editor, EditorState } from "draft-js";
 import { differenceInDays, format, isValid } from "date-fns";
@@ -34,14 +34,29 @@ import { useQueueStore } from "@/hooks/use-QueueState";
 import { useCompletedTaskStore } from "@/hooks/use-CompletedTaskState";
 import { useInverseStore } from "@/hooks/use-inverseState";
 import { uselistStore } from "@/hooks/use-listState";
-import moment from "moment";
-import CreatedAtUpdatedAt from "./updatedCreated";
-import { useCardReadModeStore } from "@/hooks/use-cardReadMode";
+import FilterSection, { LabelValueType } from "../components/FilterSection";
+import { createTag } from "@/actions/create-tag";
+import { useInverseTableStore } from "@/hooks/use-inverseTableState";
+import { useShowBGImageStore } from "@/hooks/use-showBGImage";
+import { useTagLabelValueStore } from "@/hooks/use-tagLabelValue";
+import { useUserLabelValueStore } from "@/hooks/use-userLabelValues";
+import { SafeBoard2 } from "@/types";
+import { PageView } from "./_components/page-view";
+import { PageViewTable } from "./_components/page-view-table";
+import { useCollapseStore } from "@/hooks/use-collapseState";
+import { useShowMobileViewStore } from "@/hooks/use-mobileView";
+import { getTextFromEditorSafe, getTextFromEditorSafe2 } from "@/components/modals/card-modal/description";
+import { handleSummarize } from "../summarizeText";
+import { Button } from "@/components/ui/button";
+import { FaFilePdf } from "react-icons/fa";
 
 interface ProjectsClientProps {
-  boards: SafeBoard[],
+  boards: SafeBoard2[],
   currentUser?: SafeUser | null,
-  origin: string
+  origin: string,
+  tagNames:any,
+  userNames:any
+  // collapsedState?:boolean
 }
 interface Highlight {
   text: string;
@@ -67,9 +82,14 @@ export function getFinalStatement(data:any){
 const ProjectsClient: React.FC<ProjectsClientProps> = ({
               boards,
               currentUser,
-              origin
+              origin,
+              tagNames,
+              userNames,
+             // collapsedState=false
+
             }) => {
 
+        // console.log("First boards:",boards[0].views._count)
   let recentDays=currentUser?.recentDays?currentUser.recentDays:7 
   const router = useRouter();
   const [deletingId, setDeletingId] = useState(''); 
@@ -80,19 +100,57 @@ const ProjectsClient: React.FC<ProjectsClientProps> = ({
   const [itemOffset, setItemOffset] = useState(0);
   const isMobile =  useIsMobile();
   const [fList,setFList]=useState(boards);
-  const [fListPage,setFListPage]=useState(boards);
+  const [fListPage,setFListPage]=useState(boards);//page display
   const [compositeDecorator,setCompositeDecorator] = useState(new CompositeDecorator([]))
   const {overdueState}= useOverdueStore();
   const {recentQ}= useQueueStore();
   const {inverseState}= useInverseStore();
+  const {inverseTableState}= useInverseTableStore();
+
   const {completedTasks} =useCompletedTaskStore();
   const {listState }= uselistStore();
-
+  const {showBGImage }= useShowBGImageStore();
+  const  [uniqueBoardId, setUniqueBoardId]=useState('')
   
-  // const {readMode,setReadModeState}= useCardReadModeStore();
-  //set current 
-  // setReadModeState(currentUser?.cardReadMode||true)
- 
+  const {collapseState}= useCollapseStore();
+//state with collapse tagged project
+  const [initialCollapseState, setInitialCollapsedState]=useState(origin=='taggedprojects'?collapseState:collapseState)
+  const {showMobileView}=useShowMobileViewStore();
+  
+  const [isCollapsed, setIsCollapsed] = useState(initialCollapseState);
+  // let originalA =getLabelsAndValuesFromValues(tagNames, [])
+//
+const handleToggleSelectUniqueBoard = (id:string)=>{
+ //filter only on
+  if (uniqueBoardId?.length==0){//(filteredBoards.length==1){//change logic
+    //toggle to full....
+    // setFilteredBoards(boards)
+    //clear all previous search
+    setSearchTerm('')
+    setUniqueBoardId(id)
+    // setUniqueSelection(false)
+  }else{
+    //---filter only this
+    // const uniqueBoard = boards?.filter(x=>(x.id==id))
+    // setFilteredBoards(uniqueBoard)
+    setUniqueBoardId('')
+  }
+};
+
+  const [category,setCategory]=useState<string>('')//x==''?null:x)//tag);
+  const {tagList,setTagList}=useTagLabelValueStore();
+  const {userList, setUserList}=useUserLabelValueStore();
+
+  useEffect(() => {
+   const newTagList = Array.from(tagNames);
+   if (JSON.stringify(newTagList) !== JSON.stringify(tagList)) {
+     setTagList( Array.from(tagNames));    
+   }
+   const newUserList = Array.from(userNames);
+  if (JSON.stringify(newUserList) !== JSON.stringify(userList)) {
+    setUserList( Array.from(userNames));    
+  }
+  }, []);
   const { execute, fieldErrors } = useAction(updatePagSize, {
     onSuccess: (data) => {
       toast.success(`PageSize for ${data.email} updated to ${data.pageSize}`);
@@ -103,130 +161,127 @@ const ProjectsClient: React.FC<ProjectsClientProps> = ({
   });  
 let personalColor='text-orange-100';
 let personalBgColor='bg-sky-100';
-const columnHelper = createColumnHelper<SafeBoard>()
 
+
+const { execute:executeTag } = useAction(createTag, {
+  onSuccess: (data) => {
+    toast.success(`Tag "${data.name}" created`);
+    //formRef.current?.reset();
+  },
+  onError: (error) => {
+    toast.error(error);
+  },
+});
+
+const columnHelper = createColumnHelper<SafeBoard2>()
+// toast.message(`is collapsed:?:${collapseState}`)
 const columns = [  
-  
-  columnHelper.accessor('imageThumbUrl', {
-    cell: (info) =>{
-        const id=info?.table.getRow(info.row.id).original.id 
-        const pbc= info?.table.getRow(info.row.id).original.public         
-        const userId= info?.table.getRow(info.row.id).original.userId         
-        const title=info?.table.getRow(info.row.id).original.title;
-        const percent=info?.table.getRow(info.row.id).original.percent ;
-        const board =info?.table.getRow(info.row.id).original
-        // get latest card or the first card
-        const subtitle=getLatestCard(getCardsFromSafeBoard(board))?.title?? board?.lists[0]?.cards[0]
-     
-    
-     return ( 
-      <Link
-      key={id}
-      href={`/board/${id}`}
-      className=""
-      >
-  
-          <div 
-              className="flex flex-col bg-no-repeat bg-cover bg-center rounded-sm"
-              style={{ backgroundImage: `url(${info?.getValue()})` }}
-          >
-              <div className="flex  gap-1">
-                <Link
-                  key={id}
-                  href={`/board/${id}`}
-                  className=""
-                >
-                  <img
-                      src={info?.getValue()}
-                      alt={'...'}
-                      className="rounded-full w-10 h-10 object-cover"
-                    />
-                </Link>
-                <span className="mr-0 text-lg">{title}</span>
-              </div>
-              <div className="mt-1 flex flex-row gap-1">
-                  <div 
-                    className="w-[150px]"
-                  >
-                        <ProgressBar 
-                            isLabelVisible={false}  
-                            bgColor={getColorFromPercent(Number(percent))}  
-                            completed={Number(percent)} 
-                        />
-                  </div>
-                  <span>{`${percent}%`}</span>
-                  {/* {currentUser?.id == userId 
-                      && <PrivacyButton 
-                              boardId={id}
-                              currentState={pbc} 
-                              currentUser={currentUser}
-                    /> 
-                  } */}
+  ...((inverseTableState==true) && (collapseState==false)?
+        [
+          columnHelper.accessor('imageThumbUrl', {
+                cell: (info) =>{
+                    const id=info?.table.getRow(info.row.id).original.id 
+                    const title=info?.table.getRow(info.row.id).original.title;
+                    const progressStatus=info?.table.getRow(info.row.id).original.progressStatus;
+                    const percent=info?.table.getRow(info.row.id).original.percent ;
+                    const board =info?.table.getRow(info.row.id).original
+                return (
+                  <>
+                   < div
+                        className="flex flex-col bg-no-repeat bg-cover bg-center rounded-sm"
+                        style={showBGImage ? { backgroundImage: `url(${info?.getValue()})` } : undefined}
+                    >
+                        
+                          <div className="flex gap-1">
+                           
+                              <img
+                                  src={info?.getValue()}
+                                  alt={'...'}
+                                  className="rounded-full w-10 h-10 object-cover"
+                                  onClick={()=>{handleToggleSelectUniqueBoard(id)}}
+                                />
+                            <div
+                              key={id}
+                              className="flex flex-col"
+                            >
+                              <Link  
+                                 key={id}
+                                 href={`/board/${id}`}
+                                 className="cursor-pointer"
+                              >
+                                <h2 className={cn("font-bold text-xl text-white bg-black mix-blend-difference ")}>{title}</h2>
+                              </Link>
 
-              </div>
-              <ul>
-                <li>
-                  <span className="text-sm font-mono bold">{subtitle}</span>
-                </li>
-              </ul>
-              
-          </div>
-      </Link>
-     )
-    },
-        header: "Title",
-  }),
-  
-  
-  columnHelper.accessor("percent", {
-    cell: (info) => {
-      //  console.log('id', info?.table.getRow(info.row.id).original)
-      const id=info?.table.getRow(info.row.id).original.id 
-      const pbc= info?.table.getRow(info.row.id).original.public         
-      const userId= info?.table.getRow(info.row.id).original.userId         
-      const board= info?.table.getRow(info.row.id).original
-      // get latest card or the first card
-      const x=getLatestCard(getCardsFromSafeBoard(board))?? board?.lists[0]?.cards[0]
-      const created=x? x.createdAt:info?.table.getRow(info.row.id).original.createdAt
-      const updated=x? x.updatedAt:info?.table.getRow(info.row.id).original.updatedAt;
-      const notSameDate = moment(created).fromNow()!== moment(updated).fromNow()
-      // areDatesSimilar(created,updated,1);
-     return ( 
+                              <span className="text-[10px] px-2 text-white bg-black mix-blend-difference ">{progressStatus}</span>
+                              
+                            </div>
+                                   
+                        
+                          </div>
+                        
+                          <div className="mt-2 flex flex-row gap-1">
+                              <div 
+                                className="w-[150px]"
+                              >
+                                    <ProgressBar 
+                                        height={'3px'}
+                                        isLabelVisible={false}  
+                                        bgColor={getColorFromPercent(Number(percent))}  
+                                        completed={Number(percent)} 
+                                    />
+                              </div>
+                              <div className='flex gap-1 mt-[-10px]'>
+                              
+                                    <div className="flex flex-row">
+                                      <span className="text-white bg-black mix-blend-difference ">{percent}%</span>
+                                    </div>
+                                    {currentUser?.id == board?.userId 
+                                            && <PrivacyButton 
+                                                    boardId={board.id}
+                                                    currentState={board.public} 
+                                                    currentUser={currentUser}
+                                          /> 
+                                        }
+                                    
+                              </div>
+                            
+                          </div>
+                      </div> 
+                    </> 
+                )
+                },
+                    header: "Title",
+          }),
+        ]
+    :
+    //collapsed state and invesrseTable==Truess
+       []
       
-      <div className="flex flex-col">
-        <div className="flex justify-between">
-            <div className="flex gap-1">
-                <span className='flex gap-2 text-sm text-red-200 '>Due-Status:</span> 
-                <span className='flex gap-2 text-sm text-red-200 '>{getFinalStatement(x)}</span> 
-            </div>
-            <div className="flex gap-1">
-              <span className='flex gap-2 text-sm text-red-200 '>{'cre: '} {moment(created).fromNow() }</span>
-              {notSameDate && <span className='flex gap-2 text-sm text-red-200 '>{'upd: '} {moment(updated).fromNow() }</span>}
-              {currentUser?.id == userId 
-                  && <PrivacyButton 
-                          boardId={id}
-                          currentState={pbc} 
-                          currentUser={currentUser}
-                /> 
-              }
+      ),
 
-            </div>
-        </div>        
-        <div 
-              className={cn(
-                "static-editor max-h-[50vh] overflow-x-hidden ",
-              )}
-          >
-              <Editor 
-                editorState={EditorState.createWithContent(getTextFromEditor3(x),compositeDecorator)} 
-                readOnly 
-                onChange={() => {}} // Empty dummy function
-              />
-          </div>
-    </div>
-  
+  columnHelper.accessor("imageThumbUrl", {
+    cell: (info) => {
+      const title=info?.table.getRow(info.row.id).original.title;
+      const progressStatus=info?.table.getRow(info.row.id).original.progressStatus;
+      const percent=info?.table.getRow(info.row.id).original.percent ;
+      const board =info?.table.getRow(info.row.id).original;   
+      const id=info?.table.getRow(info.row.id).original.id 
+     
+    return (
+      // show header if false 
+        <PageViewTable
+          board={board}
+          currentUser={currentUser}
+          tagNames={tagNames}
+          userNames={userNames}
+          setCategory={setCategory}
+          category={category}
+          compositeDecorator={compositeDecorator}
+          handleToggleSelectUniqueBoard={handleToggleSelectUniqueBoard}
+          initialEditingState={initialCollapseState}
+          inverseTableState={inverseTableState}
+        />
     )
-
   },
     header: "Description",
   }),                           
@@ -234,23 +289,41 @@ const columns = [
    
 ]
 
-// Assuming you have functions for truncation and formatting
-function truncateString(text: string, maxLength: number): string {
-  // Implement your truncation logic here
-  return text.slice(0, maxLength) + (text.length > maxLength ? "..." : "");
-}
 
-function NumberFormatter(value: number): string {
-  // Implement your formatting logic here (e.g., comma separators, decimals)
-  return value.toFixed(2); // Example formatting to two decimal places
-}
   Cookies.set('originString', origin)  
+  
   useEffect(() => {
+    // filter
+    let boardsPostTag = boards
+    if (uniqueBoardId.length>0){
+      boardsPostTag = boards?.filter(x=>(x.id==uniqueBoardId.trim()))
+    }
+    
     if (searchTerm !== "") {
       let arrFirst =searchTerm.split(';');
       const arr = arrFirst.filter(element => element);  // Using arrow function (ES6)
-
-      const results = boards.filter((board) =>
+   
+     if (category !=='') {
+      let xy= category.split(',')
+      // toast.message(`${xy}`)
+      boardsPostTag = boardsPostTag.map((board) => ({
+        ...board,
+        //Change lists
+        lists:board.lists.map((list)=>({
+          ...list,
+          //filter cards belonging to list
+          cards: list.cards.filter((card)=>
+            (
+              //Loop thru card tags
+             xy.every((s)=>(card?.tagIDs.includes(s.trim())))
+            )
+          )
+        })
+        ),
+      })
+      );
+     }
+      const results = boardsPostTag.filter((board) =>
           (
             arr.some(
               (x)=>
@@ -299,9 +372,34 @@ function NumberFormatter(value: number): string {
       setFilteredBoards(results);
       // setFilteredListPage(results)
     } else {
-      setFilteredBoards(boards);
+  
+      if (category !=='') {
+       let xy= category.split(',')
+      //  toast.message(`${xy}`)
+       boardsPostTag = boardsPostTag.map((board) => ({
+         ...board,
+         //Change lists
+         lists:board.lists.map((list)=>({
+           ...list,
+           //filter cards belonging to list
+           cards: list.cards.filter((card)=>
+             (
+               //Loop thru card tags
+              xy.every((s)=>(card?.tagIDs.includes(s.trim())))
+             )
+           )
+         })
+         ),
+       })
+       );
+      }
+     
+      setFilteredBoards(boardsPostTag);
     }
-  }, [boards]);
+  }, [boards,category,uniqueBoardId,
+     searchTerm //added this....
+    ]);
+
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
@@ -310,7 +408,7 @@ function NumberFormatter(value: number): string {
 
  let allowedRoles:String[]
  allowedRoles=['employee','admin','visitor', 'manager']
- const isAllowedAccess = currentUser?.roles.filter((role) =>
+ const isAllowedAccess = currentUser?.roles.filter((role: string) =>
                                           (//Outer bracket ::forEach user role  
                                               //Search Card  within the List
                                               allowedRoles.some((y)=>(// Allowed Roles
@@ -322,13 +420,8 @@ function NumberFormatter(value: number): string {
                                         )// Out bracker
                                     ) 
 const popover_content_pos =width?width<mobileWidth?'bottom':'right':'right'
-let title_ =  `Personal Projects ${fList.length} of ${boards.length}`
-let subtitle_="Projects boards created by you" //"Manage your projects and teams online"
 
-if (origin!=='myprojects'){
-  title_ =  `Projects ${fList.length} of ${boards.length}`
-  subtitle_="Available Projects"
-  }       
+       
  /* ----------------Pagination------------ */
  type PageSizeOption = '1' | '2' | '3' | '4' | '8' | '16' | '24' | '32' | '48' | '60'; // Define valid page size options
  
@@ -351,7 +444,7 @@ const handlePageSizeChange = (newPageSize: PageSizeOption) => {
    setItemOffset(newOffset);
  };
  
- const calculatePageSlice = (fList?: SafeBoard[], itemOffset?: number, pageSize?: number): SafeBoard[] | undefined => {
+ const calculatePageSlice = (fList?: SafeBoard2[], itemOffset?: number, pageSize?: number): SafeBoard2[] | undefined => {
    if (!fList|| !pageSize) {
      return undefined;
    }
@@ -364,7 +457,13 @@ const handlePageSizeChange = (newPageSize: PageSizeOption) => {
    if (pageSlice) {
      setFListPage(pageSlice);
    }
+
+  //  console.log('fListPage',fListPage[0].views.viewCount)
  }, [itemOffset, fList, pageSize]);
+ useEffect(() => {
+//testing.......................................
+  // console.log('fListPage2',fListPage[0].views.viewCount)
+}, [fListPage]);
  
  useEffect(() => {
    if (fList && pageSize) {
@@ -398,7 +497,7 @@ const handlePageSizeChange = (newPageSize: PageSizeOption) => {
                activeClassName="active bg-orange-300 text-white" // Tailwind CSS classes
                previousLabel="«"
                nextLabel="»"
-   
+               key={'andgwgw!'}
                onPageChange={handlePageClick}
                pageRangeDisplayed={5}
                pageCount={Math.ceil(isNumber(fList?.length/pageSize)?fList?.length/pageSize:0)}
@@ -411,9 +510,10 @@ const handlePageSizeChange = (newPageSize: PageSizeOption) => {
        <select 
            className='border-gray-300 rounded border text-rose-500' 
            value={pageSize} 
+           key={'abanansgd'}
            onChange={(e) => handlePageSizeChange(e.target.value as PageSizeOption)}
        >
-           <option value="1">1 per Page</option>
+           <option value="1" >1 per Page</option>
            <option value="2">2 per Page</option>
            <option value="3">3 per Page</option>
            <option value="4">4 per Page</option>
@@ -426,7 +526,7 @@ const handlePageSizeChange = (newPageSize: PageSizeOption) => {
        </select>
  
    );
-   return <div className="flex justify-center gap-3">{buttons}</div>;
+   return <div  className="flex justify-center gap-3">{buttons}</div>;
  };
  
 useEffect(() => {
@@ -452,7 +552,7 @@ useEffect(() => {
 }, [pageCount]);
 
 useEffect(()=>{  
-  let boardListFilterCard: SafeBoard[];
+  let boardListFilterCard: SafeBoard2[];
   let arrFirst =searchTerm.split(';');
   const arr = arrFirst.filter(element => element);  // Using arrow function (ES6)
   if (searchTerm !== "") {
@@ -797,7 +897,37 @@ useEffect(()=>{
     } 
 
   }
+
 },[filteredBoards,overdueState,recentQ,completedTasks, inverseState, searchTerm,listState])
+
+
+const getSummary= ()=>{
+ 
+  const improvedCode = (): string => {
+    return fList.map((board) => {
+      const boardTitle = board.title; 
+      return `${boardTitle}\n${board.lists.map((innerList) => {
+        return innerList.cards.map((card) => {
+          return ` ${card.title} ${getTextFromEditorSafe(card)}`; 
+        }).join('\n'); 
+      }).join('\n')}`; 
+    }).join('\n\n'); 
+  };
+  // Assuming you have a handleSummarize function that takes a string
+let summarizedContent: string = '';
+const dbResult= improvedCode()
+
+handleSummarize(dbResult) // Call improvedCode with fList
+  .then((summary) => {
+    summarizedContent = summary;
+    console.log('Summary=====>:',summarizedContent)
+  })
+  .catch((error) => {
+    console.error('Error summarizing content:', error);
+  });
+  
+ 
+};
 
 useEffect(()=>{
   let arrFirst =searchTerm.split(';');
@@ -831,143 +961,116 @@ useEffect(()=>{
   setCompositeDecorator(new CompositeDecorator([customHighlightDecorator]));
 },[searchTerm])
 
+let title_= `Personal Projects ${fList.length} of ${boards.length}`
+
+ let subtitle_="Projects boards created by you" //"Manage your projects and teams online"
+
+ if (origin!=='myprojects'){
+   if (origin=='pinnedprojects'){
+    title_= `Pinned Projects ${fList.length} of ${boards.length}`
+    subtitle_="Pinned Cards"
+    // collapsedState===
+  
+   }else if(origin=='taggedprojects'){
+    title_= `Tagged Projects ${fList.length} of ${boards.length}`
+    subtitle_="Tagged Cards"
+    // collapsedState=true
+  
+   }
+   else{
+     title_= `Projects ${fList.length} of ${boards.length}`
+     subtitle_="Available Projects"
+   }
+ }
+
 // Note: these aren't very good regexes, don't use them!
  if (isAllowedAccess?.length==0) return redirect('/denied') 
  if(!currentUser)return redirect('/denied')
+
   return (
     <Container >
-     <div className="mt-[-40px] flex flex-col  sm:flex-row  justify-between sm:px-1 xs:px-2">          
+     <div className="z-51 mt-[-40px] flex flex-col  sm:flex-col  justify-between sm:px-1 xs:px-2">          
         <Heading
-          title={title_}
+          title={uniqueBoardId.length==0?title_:'Project View mode. To exit, either click here or on the project image.'}
           subtitle={subtitle_} 
+          isSetBackground={uniqueBoardId?.length>0||(origin=='pinnedprojects')||(origin=='taggedprojects')}
+          setUniqueBoardId={setUniqueBoardId}
         />
-        <div className="flex flex-row">
-          <SaveExcelMutliple data={fList} disabled={false} fileName={`${origin}_${currentUser.email}_`}/>
-          <Search 
-              handleSearch ={handleSearch} 
-              setSearchTerm={setSearchTerm} 
-              searchTerm = {searchTerm}
-          />  
+     
+        <div className={cn("flex gap-1 z-51", isMobile ? 'flex-col' : 'flex-row justify-between items-start')}> {/* items-start added */}
+            <div className="flex flex-row">
+                <Button
+                    variant="ghost"
+                    onClick={() => { getSummary() }}
+                    className="rounded-none h-[41px] w-[41px] sm:mt-9 justify-start font-normal text-lg"
+                >
+                    <FaFilePdf size={40} />
+                </Button>
+                <SaveExcelMutliple data={fList} disabled={false} fileName={`${origin}_${currentUser.email}_`} />
+                <Search
+                    setSearchTerm={setSearchTerm}
+                    searchTerm={searchTerm}
+                />
+            </div>
+            <div className={cn("flex w-full mt-1 z-51 sm:mt-10 rounded-lg mr-auto", isMobile ? 'py-2' : '')}> {/* No changes here */}
+                <FilterSection
+                    setCategory={(category) => {
+                        setCategory(category ? category : '');
+                    }}
+                    productCategories_options={tagNames}
+                    category={category.length > 0 ? category : null}
+                    isFullwidth={isMobile ? true : false}
+                    placeholder="Filter by tags"
+                    isDisabled={false}
+                />
+            </div>
         </div>
+
+
+
+
+        
      </div>
-     <div className="mt-1 pb-5">{/* space-y-4 pb-10*/}
+     <div className={cn("mt-1 pb-5",uniqueBoardId.length==0?'':'shadow-xl rounded-md p-1 border-yellow-400 border-2')}>{/* space-y-4 pb-10*/}
         <div>
           {
-            isMobile?
+            (isMobile || showMobileView==true)?
             ( 
               <div 
                   className={cn(
-                    "grid grid-cols-2 lg:grid-cols-4 gap-4",
-                    isMobile?'grid grid-cols-1':''
+                    // "grid grid-cols-2 lg:grid-cols-4 gap-4",
+                    isMobile?'grid grid-cols-1':'grid grid-cols-1'
                   )}
                 >
                   {fListPage.map((board, index) => (
-                            <>
-                              {
-                                (
-                                  <div
-                                      key={index}
-                                      className={cn(
-                                          "p-3 hover:border hover:border-primary rounded-lg cursor-pointer",
-                                          isMobile?'grid grid-cols-[5%_95%] ':'',
-                                          currentUser?.id == board.userId?personalBgColor:'bg-gray-100',
-                                      )}
-                                  >
-                                      <Link 
-                                        key={board.id}
-                                        href={`/board/${board.id}`}
-                                          className='cursor-pointer' 
-                                        >
-                                          <Avatar className="h-10 w-10">
-                                              <AvatarImage src={board.imageThumbUrl} />
-                                          </Avatar>
-                                      </Link>
-                                    
-                                      <div className='flex mt-2 flex-col gap-2'>
-                                            <div className="flex flex-row justify-between w-full bg-no-repeat bg-cover bg-center rounded-sm" style={{ backgroundImage: `url(${board.imageThumbUrl})` }}>
-                                              <Link 
-                                                  key={board.id}
-                                                  href={`/board/${board.id}`}
-                                                    className='cursor-pointer' 
-                                                  >
-                                                  <h2 className={cn("text-white font-bold text-xl", isMobile?'px-7':'')}>{board?.title}</h2>
-                                              </Link> 
-                                              <div className='flex'>
-                                                    <div className="flex flex-row">
-                                                      <span className="text-white">{board.percent}%</span>
-                                                    </div>
-                                                    {currentUser?.id == board.userId 
-                                                            && <PrivacyButton 
-                                                                    boardId={board.id}
-                                                                    currentState={board.public} 
-                                                                    currentUser={currentUser}
-                                                          /> 
-                                                        }
-                                              </div>
-                                            </div>
-                                              
-                                            <div 
-                                              className="w-full"
-
-                                                // absolute
-                                                // bottom-3
-                                                // left-3"
-                                            >
-                                              <ProgressBar 
-                                                  isLabelVisible={false}  
-                                                  bgColor={getColorFromPercent(Number(board.percent))} 
-                                                  // baseBgColor="color-inherit" 
-                                                  // className="w-[70%] relative text-xs/4px text-white bg-transparent" 
-                                                  completed={Number(board.percent)} 
-                                              />
-                                            </div>
-                                           <h2 className='flex gap-2 text-sm font-bold text-gray-700 '>{getLatestCard(getCardsFromSafeBoard(board))?.title??board.lists[0]?.cards[0]?.title}</h2> 
-                                            <CreatedAtUpdatedAt 
-                                                createdAt={getLatestCard(getCardsFromSafeBoard(board))?.createdAt?? board.createdAt} 
-                                                updatedAt={getLatestCard(getCardsFromSafeBoard(board))?.updatedAt?? board.updatedAt}/>
-                                            {/* <div className="flex justify-between">
-                                              <span className='flex gap-2 text-sm text-gray-700 '>{'cre '} {moment(getLatestCard(getCardsFromSafeBoard(board))?.createdAt?? board.createdAt).fromNow()}</span> 
-                                              <span className='flex gap-2 text-sm text-blue-700 '>{'upd '} {moment(getLatestCard(getCardsFromSafeBoard(board))?.updatedAt?? board.updatedAt).fromNow()}</span> 
-                                            </div>
-                                                                   */}
-                                            <div 
-                                                className={cn(
-                                                  "static-editor max-h-[50vh] overflow-x-hidden shadow border",
-                                                  // cardYscroll? "overflow-y-auto" : "overflow-y-hidden" 
-                                                )}
-                                            >
-
-                                              <div className="flex flex-col">
-                                                <div className="flex gap-1">
-                                                  <span className='flex gap-2 text-sm text-red-700 '>Due-Status:</span> 
-                                                  <span className='flex gap-2 text-sm text-red-700 '>{getFinalStatement(getLatestCard(getCardsFromSafeBoard(board))??board?.lists[0]?.cards[0])}</span> 
-                                                </div>         
-                              
-                                                <Editor 
-                                                  editorState={EditorState.createWithContent(getTextFromEditor3(getLatestCard(getCardsFromSafeBoard(board))??board?.lists[0]?.cards[0]),compositeDecorator)} 
-                                                  readOnly 
-                                                  onChange={() => {}} // Empty dummy function
-                                                />
-                                              </div>
-                                            </div>          
-                                      </div>
-                                  </div>           
-                                )
-                                }
-                            </>
+                            <div 
+                              className=""       
+                              key={ board.id   }
+                            >
+                                <PageView 
+                                  board={board}
+                                  currentUser={currentUser}
+                                  index={index}
+                                  tagNames={tagNames}
+                                  userNames={userNames}
+                                  setCategory={setCategory}
+                                  category={category}
+                                  compositeDecorator={compositeDecorator}
+                                  handleToggleSelectUniqueBoard={handleToggleSelectUniqueBoard}
+                                  initialEditingState={initialCollapseState}
+                                />
+                            </div>
                     ))}
                   <FormPopover sideOffset={isMobile?-125:10} side={popover_content_pos }>
                     <div
                       role="button"
-                      className="aspect-video relative h-[75px] w-[200px] bg-muted rounded-sm flex flex-col gap-y-1 items-center justify-center hover:opacity-75 transition"
+                      className="mt-1 aspect-video relative h-[75px] w-[200px] bg-muted rounded-sm flex flex-col gap-y-1 items-center justify-center hover:opacity-75 transition"
                     >
                       <p className="text-sm">Create new project board</p>
                       <span className="text-xs"></span>
                       <Hint
                         sideOffset={40}
-                        description={`
-                          Create Workspaces here. Its unlimited boards for this workspace.
-                        `}
+                        description={`Create project board here.`}
                       >
                         <HelpCircle
                           className="absolute bottom-2 right-2 h-[14px] w-[14px]"
@@ -1004,9 +1107,7 @@ useEffect(()=>{
                       <span className="text-xs"></span>
                       <Hint
                         sideOffset={40}
-                        description={`
-                          Create Workspaces here. Its unlimited boards for this workspace.
-                        `}
+                        description={`Create project board here.`}
                       >
                         <HelpCircle
                           className="absolute bottom-2 right-2 h-[14px] w-[14px]"

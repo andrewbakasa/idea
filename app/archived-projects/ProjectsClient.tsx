@@ -13,12 +13,14 @@ import Search from "../components/Search";
 import Container from "../components/Container";
 import Link from "next/link";
 import { useAction } from "@/hooks/use-action";
-import { activateBoard } from "../../actions/activate-board";
+// import { activateBoard } from "../../actions/activate-board";
 import DeleteButton from "../components/DeleteButton";
 import Avatar from "@/app/components/Avatar";
+import { activateBoard } from "@/actions/activate-board";
+import { SafeBoard2 } from "@/types";
 
 interface ProjectsClientProps {
-  boards: SafeBoard[],
+  boards:any[],// SafeBoard2[],
   currentUser?: SafeUser | null,
 }
 
@@ -35,35 +37,35 @@ const ProjectsClient: React.FC<ProjectsClientProps> = ({
   // 24 January 2024  Prisma search nested models
   useEffect(() => {
     if (searchTerm !== "") {
-      const results = boards.filter((board) =>
-          (//Outer bracket           
-              //Select current board title
-              board.title.toLowerCase().includes(searchTerm.toLowerCase())
-              ||
-              //Search List within the board
-              board.lists.some(
-                (x_list)=>(
-                  (  // Search List title
-                      x_list.title.toLowerCase().includes(searchTerm.toLowerCase())
-                      ||
-                      //Search Card  within the List
-                      x_list.cards.some(
-                        ( x_card)=>(
-                          //Search Card Title
-                          x_card.title.toLowerCase().includes(searchTerm.toLowerCase())
-                          ||
-                          // OR Select card Description if exist
-                          x_card.description?.toLowerCase().includes(searchTerm.toLowerCase())
-                        )// Return clossing bracket
-                      )
-                  )// Return clossing bracket
-                )
-              ) // End of board List
+      // const results = boards.filter((board) =>
+      //     (//Outer bracket           
+      //         //Select current board title
+      //         board.title.toLowerCase().includes(searchTerm.toLowerCase())
+      //         ||
+      //         //Search List within the board
+      //         board.lists.some(
+      //           (x_list)=>(
+      //             (  // Search List title
+      //                 x_list.title.toLowerCase().includes(searchTerm.toLowerCase())
+      //                 ||
+      //                 //Search Card  within the List
+      //                 x_list.cards.some(
+      //                   ( x_card)=>(
+      //                     //Search Card Title
+      //                     x_card.title.toLowerCase().includes(searchTerm.toLowerCase())
+      //                     ||
+      //                     // OR Select card Description if exist
+      //                     x_card.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      //                   )// Return clossing bracket
+      //                 )
+      //             )// Return clossing bracket
+      //           )
+      //         ) // End of board List
               
-          )// Out bracker
+      //     )// Out bracker
        
-      );
-      setFilteredBoards(results);
+      // );
+      setFilteredBoards(boards);//results);
     } else {
       setFilteredBoards(boards);
     }
@@ -99,7 +101,7 @@ const ProjectsClient: React.FC<ProjectsClientProps> = ({
           subtitle="Click to restore project"
         />
        <Search 
-          handleSearch ={handleSearch}
+          // handleSearch ={handleSearch}
           setSearchTerm={setSearchTerm}                   
           searchTerm = {searchTerm} />
      </div>
@@ -124,7 +126,7 @@ const ProjectsClient: React.FC<ProjectsClientProps> = ({
               >
                      
                      <div className="absolute inset-0 ">
-                      <Avatar classList="border-[1.5px] border-white"  src={board.user_image} />
+                      <Avatar classList="border-[1.5px] border-white"  src={board?.user_image} />
                     </div>
                       <Link
                             key={board.id}

@@ -10,7 +10,11 @@ interface BoardTitleOptionsProps {
   data2: SafeBoard,
   useremail:string,
   userId:string,
-  isOwner:boolean
+  cardReadModeBase:boolean,
+  isOwner:boolean,
+  userNames:any;
+  userImages:any,
+  boardViewCreatedAt:any
 };
 
 export const BoardTitleOptions = ({
@@ -18,19 +22,22 @@ export const BoardTitleOptions = ({
   data2,
   useremail,
   isOwner,
-  userId
+  userId,
+  cardReadModeBase,
+  userNames,
+  userImages,
+  boardViewCreatedAt
 }: BoardTitleOptionsProps) => {
   
   const [percent, setPercent] = useState(0);
   return (
-    // If List in private show darker handle
-    
-    
+   
     <>
          {/* First div */}
             <BoardTitleForm 
                 data={data}  
                 percent={percent} 
+                ownerImage={data2.user_image}
                 setPercent={setPercent}
             /> 
          {/* Second div */}
@@ -42,6 +49,10 @@ export const BoardTitleOptions = ({
                   percent={percent} 
                   setPercent={setPercent} 
                   userId={userId}
+                  cardReadModeBase={cardReadModeBase}
+                  userNames={userNames}
+                  userImages={userImages}
+                  boardViewCreatedAt={boardViewCreatedAt}
               />
           </div>
     </>

@@ -1,9 +1,12 @@
 
 import prisma from "@/app/libs/prismadb";
-import { ListContainer } from "./_components/list-container";
 import getCurrentUser from "../../actions/getCurrentUser";
 import EmptyState from "@/app/components/EmptyState";
 import ClientOnly from "@/app/components/ClientOnly";
+import getTagNames from "@/app/actions/getTagNames";
+import { ListContainer } from "./_components/list-container";
+import getUserNames from "@/app/actions/getUserNames";
+
 
 interface BoardIdPageProps {
   params: {
@@ -16,7 +19,18 @@ const BoardIdPage = async ({
 }: BoardIdPageProps) => {
  
    const currentUser = await getCurrentUser();
+   const tagNames =await getTagNames()
+   const userNames =await getUserNames()
+
+   
+
+ 
+  
+  
    if (!currentUser) {
+
+    
+
   
     return (
       <ClientOnly>
@@ -33,14 +47,49 @@ const BoardIdPage = async ({
         where: {
           boardId: params.boardId,
         },
-        include: {
-          cards: {
-            orderBy: {
-              order: "asc",
+          include: {
+            cards: {
+              orderBy: {
+                order: "asc",
+              },
+              include: { 
+                tags: true,
+                cardImages:true,
+                taggedUsers: {
+                    include: {
+                        user: {
+                            select: {
+                            // Include fields you want from the User model
+                            id: true,
+                            name: true,
+                            email: true,
+                            // ... other fields
+                            },
+                        },
+                     },
+                 },
+                    
+                 comments:{
+                  include: {
+                          user: {
+                              select: {
+                              //  Include fields you want from the User model
+                              id: true,
+                              name: true,
+                              email: true,
+                              //  ... other fields
+                              },
+                          },
+                        }
+                }
+             
+              },      
             },
+            
           },
-        },
-        orderBy: {
+
+          
+          orderBy: {
           order: "asc",
         },
       });
@@ -72,7 +121,8 @@ const BoardIdPage = async ({
       // console.log('page', isOwner)
       
         //filter().map() function
-        const lists_filter =   lists.filter(list =>{ 
+        let lists_filter:any
+         lists_filter =   lists.filter(list =>{ 
           // if the is is visible show it
           //if its private but its the owner show it
           // if its private but user is Admin show it
@@ -82,8 +132,8 @@ const BoardIdPage = async ({
               //change cards
               userId:x.userId || "",
               cards: x.cards.filter(card => {
-              
-              return ((card.visible == true || (card.userId==currentUser.id)|| isOwnerOrAdmin) && card.active)
+              const iamtagged= card?.taggedUsers?.find(x=>x.userId==currentUser.id)
+              return ((iamtagged || card.visible == true || (card.userId==currentUser.id)|| isOwnerOrAdmin) && card.active)
             
               }).map((card)=>({
                   ...card,
@@ -100,10 +150,15 @@ const BoardIdPage = async ({
               dragMode={board.dragMode}
               isOwnerOrAdmin={isOwnerOrAdmin}
               currentUserId={currentUser.id}
-              cardReadMode={currentUser?.cardReadMode? currentUser?.cardReadMode:false}
+              cardReadMode={currentUser?.cardReadMode? currentUser.cardReadMode:true}
+              // showBGImage={currentUser?.showBGImage? currentUser.showBGImage:true}
               cardYscroll={currentUser?.cardYscroll?currentUser?.cardYscroll:false}
               cardShowTitle={currentUser?.cardShowTitle?currentUser?.cardShowTitle:false}
               recentDays={currentUser?.recentDays?currentUser?.recentDays:7}
+              boardProgressStatus ={board.progressStatus}
+              tagNames={tagNames}
+              
+              userNames={userNames}
             />
           </div>
       );

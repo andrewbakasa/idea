@@ -26,7 +26,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
   let updatedCards;
 
   try {
-
+    //owner of board
     const child = await prisma.board.findUnique({ 
       where: {
         id:boardId,

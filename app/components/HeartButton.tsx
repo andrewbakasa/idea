@@ -1,25 +1,27 @@
 'use client';
 
-import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+import { MdPushPin } from "react-icons/md";
 
 import useFavorite from "@/app/hooks/useFavorite";
 import { SafeUser } from "@/app/types";
 
-import ClientOnly from "./ClientOnly";
-
 interface HeartButtonProps {
   listingId: string
-  currentUser?: SafeUser | null
+  currentUser?: SafeUser | null;
+  // handlePageClick?:(options: { selected: number })=>void;
+ 
 }
 
 const HeartButton: React.FC<HeartButtonProps> = ({ 
   listingId,
-  currentUser
+  currentUser,
+  // handlePageClick
 }) => {
-  const { hasFavorited, toggleFavorite } = useFavorite({
+  const { hasFavorited, toggleFavorite  } = useFavorite({
     listingId,
     currentUser
-  });
+   });
+
 
   return (
     <div 
@@ -31,17 +33,17 @@ const HeartButton: React.FC<HeartButtonProps> = ({
         cursor-pointer
       "
     >
-      <AiOutlineHeart
+     {/* <BsPin
         size={28}
         className="
           fill-white
           absolute
-          -top-[2px]
+          -top-[1px]
           -right-[2px]
         "
-      />
-      <AiFillHeart
-        size={24}
+      />  */}
+      <MdPushPin
+        size={26}
         className={
           hasFavorited ? 'fill-rose-500' : 'fill-neutral-500/70'
         }

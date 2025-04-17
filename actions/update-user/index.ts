@@ -33,8 +33,8 @@ const owner_id = currentUser.id
     //B
     if (child && 
       //boarder creator is allowed updating rights
-          ( //adminis allowed updating rights
-            currentUser.isAdmin)){
+          ( //adminis allowed updating rights or owner
+            currentUser.isAdmin || owner_id==id)){
       // Update child data
       user=  await prisma.user.update({
           where: { id: child.id },
