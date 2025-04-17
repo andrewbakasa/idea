@@ -170,14 +170,6 @@ model Card {
   user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
   taggedUsers CardToUser[]
   comments   Comment[]
-
-
-  //  // New fields for calculations
-  // startDate      DateTime?
-  // endDate        DateTime?
-  // estimatedHours Float?    // Estimated time in hours
-  // actualHours    Float?    // Actual time spent in hours
-  // Add the new field for the array of pictures
   cardImages   CardImage[] // Store URLs or IDs of the images
 
   
