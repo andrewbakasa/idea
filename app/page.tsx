@@ -1,14 +1,4 @@
 
-
-// import { redirect } from "next/navigation";
-
-
-// const ProjectsPage = async () => {
-//   return redirect('/home') 
- 
-// }
- 
-// export default ProjectsPage;
 'use client';
 import Clients from "@/app/components/Clients";
 import Cta from "@/app/components/Cta";
