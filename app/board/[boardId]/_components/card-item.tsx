@@ -165,7 +165,7 @@ export const CardItem = ({
                      
                      { editable &&  <div className="text-[11px]">
                         <Button
-                          onClick={() => cardModal.onOpen(data.id)}
+                          onClick={() => cardModal.onOpen(data.id,"")}
                           className="h-auto px-2 py-1.5 w-full justify-end text-muted-foreground text-[11px] hover:text-sm"
                           size="sm"
                           variant="ghost"
@@ -206,7 +206,7 @@ export const CardItem = ({
                      
                       { editable && <div className="text-[11px]">
                         <Button
-                          onClick={() => cardModal.onOpen(data.id)}
+                          onClick={() => cardModal.onOpen(data.id,"")}
                           className="h-auto px-2 py-1.5 w-full justify-end text-muted-foreground text-[11px] hover:text-sm"
                           size="sm"
                           variant="ghost"
