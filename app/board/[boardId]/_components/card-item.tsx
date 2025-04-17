@@ -2,25 +2,27 @@
 
 import { Card } from "@prisma/client";
 import { Draggable } from "@hello-pangea/dnd";
-import { cn, getTextAreaHeight, getTextAreaRow} from "@/lib/utils";
+import { cn, findLabelByValue, getTextAreaHeight, getTextAreaRow} from "@/lib/utils";
 import {checkStringFromStringArray} from "@/lib/utils";
 import { useCardModal } from "@/hooks/use-card-modal";
 import { useEffect, useState } from "react";
-import { AiFillEdit, AiOutlineEdit } from "react-icons/ai";
+import { AiFillEdit, AiFillLock} from "react-icons/ai";
 
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { getTextFromEditor, getTextFromEditor2 } from "@/components/modals/card-modal/description";
-// import { CompositeDecorator, Editor, EditorState, convertFromRaw } from 'draft-js';
 import { CompositeDecorator, DraftDecorator, Editor, EditorState } from "draft-js";
 
 import { useStringVarStore } from "@/hooks/use-search-value";
 import moment from "moment";
-import { actionAsyncStorage } from "next/dist/client/components/action-async-storage.external";
-import { relative } from "path";
-//import Tooltip from "./ToolTip";
+import { useCardReadModeStore } from "@/hooks/use-cardReadMode";
+import { CardWithList2 } from "@/types";
+import { useCommentModal } from "@/hooks/use-comment-modal";
+import { CommentShow } from "@/app/myprojects/_components/display-comment";
+import { CommentList } from "@/app/myprojects/_components/display-all-comments";
+
 interface CardItemProps {
-  data: Card;
+  data: CardWithList2;
   index: number;
   dragMode:boolean;
   listOwner:string;
@@ -29,6 +31,11 @@ interface CardItemProps {
   cardReadMode:  boolean;
   cardYscroll:  boolean;
   cardShowTitle: boolean;
+  boardId:string;
+  tagNames:any;
+  userNames:any;
+  setCategory: (category: string | null) => void;
+  
 };
 
 export const CardItem = ({
@@ -40,15 +47,26 @@ export const CardItem = ({
   currentUserId,
   cardReadMode,
   cardYscroll,
-  cardShowTitle
+  cardShowTitle,
+  boardId,
+  tagNames,
+  userNames,
+  setCategory
 }: CardItemProps) => {
 
   let hoverdummy = false;
   const cardModal = useCardModal();
+  const commentModal = useCommentModal();
  // Gett user setting
   const [toggle, setToggle] = useState(cardReadMode);
   const {stringVar,setStringVar}=useStringVarStore()
   
+  const {readMode,setReadModeState}= useCardReadModeStore();
+  
+  useEffect(()=>{
+      setToggle(readMode)
+  },[readMode])
+
   const [compositeDecorator,setCompositeDecorator] = useState(new CompositeDecorator([]))
   const actionText =cardShowTitle==true? data.title: "[Drag-drop to re-order. Click to collapse]"
 
@@ -58,17 +76,27 @@ export const CardItem = ({
                   ||(data.userId==currentUserId)  //card creator
                   || isOwnerOrAdmin // board creator or admin
 
-  const editableIcon= <span>
+  const editableIcon=editable? <span>
                         <AiFillEdit  
+                            size={10} 
+                            className="cursor-pointer h-4 w-4 hover:h-[18px] hover:w-[18px] hover:text-blue-600"
+                        /> 
+                      </span>: <span>
+                        <AiFillLock 
                             size={10} 
                             className="cursor-pointer h-4 w-4 hover:h-[18px] hover:w-[18px] hover:text-blue-600"
                         /> 
                       </span>
 
-    const editableIconStatic= editable && 
+
+    const editableIconStatic= editable?
     <span>
-      <AiFillEdit  size={10} className="h-4 w-4 "/> 
-    </span>               
+      <AiFillEdit  size={10} className="h-6 w-4 "/> 
+    </span>  
+    : <span>
+    <AiFillLock  size={10} className="h-6 w-4 "/> 
+  </span>  
+             
 
   const descript = data?.description !== null? getTextFromEditor(data):null
   // const editorState = EditorState.createWithContent(getTextFromEditor2(data)) 
@@ -111,8 +139,13 @@ export const CardItem = ({
     setCompositeDecorator(new CompositeDecorator([customHighlightDecorator]));
   },[stringVar])
 
-  const relativeCreatedDate =moment(data.updatedAt).fromNow();
-  
+  const relativeCreatedDate ="cre: " + moment(data.createdAt).fromNow();
+  const relativeUpdatedDate =", upd: " + moment(data.updatedAt).fromNow();
+  const notSameDate = moment(data.createdAt).fromNow()!== moment(data.updatedAt).fromNow()
+  const iamtagged= data?.taggedUsers?.find(x=>x.userId==currentUserId)
+   
+const ihavecomment= data?.comments?.find(x=>x.userId==currentUserId)
+const mycommentid =ihavecomment?.id||''
   //console.log("dragMode state here:", dragMode)  
   return (
     //make toggle based on user
@@ -124,15 +157,16 @@ export const CardItem = ({
               ref={provided.innerRef}
               role="button"
              
-              onClick={() => setToggle(!toggle)}
-
+            
               className={cn(
                 `border-2 border-transparent py-2 px-3 text-sm rounded-md shadow-sm
-                transition duration-200 ease-in-out`,
+                transition duration-200 ease-in-out truncate`,
                 toggle ? 'border-black w-full' : '',
-                !toggle? "truncate":"",// truncate text only when not scrolling
+                !toggle? "truncate":"",// truncate text only when not scrolling....03 August 2024 added to both
                 checkStringFromStringArray(data?.progress || "",['complete', 'release','done']) ? "text-green-500" : 
-                        checkStringFromStringArray(data?.progress || "",['wip', 'work in progress']) ? "text-blue-600":'"text-pink-600"',
+                        checkStringFromStringArray(data?.progress || "",['wip', 'work in progress']) ? "text-blue-600":
+                        checkStringFromStringArray(data?.progress || "",['stabbled', 'stabled']) ? "text-orange-400":
+                        "text-black",
                         descript && toggle ?  `h-[${getTextAreaHeight(Number(descript.length))}px]`: 
                         data?.title?.length > 0 &&  toggle ?`h-[${getTextAreaHeight(Number(data?.title.length))}px]`:"",
                         data.visible?"bg-white": "bg-rose-200"// // if card is private make darker
@@ -142,14 +176,20 @@ export const CardItem = ({
          {/* First Option  closed card*/}
           {!toggle &&  
               <div 
-                className="flex flex-row"
+                className="flex flex-row h-full"
               > 
                   <div>{editableIconStatic}</div> 
-                    <div className="relative bg-gray-100  w-full hover:bg-gray-200  font-sans truncate flex flex-row gap-1">
-                        <span className="absolute top-[-7px] right-1 text-[8px] text-blue-500">{relativeCreatedDate}</span>
-                      <span className="bg-gray-100 text-[14px] truncate">{data.title}</span>
-                    </div> 
-                  {/* </div> */}
+                  <div className="relative bg-gray-100  w-full hover:bg-gray-200  font-sans truncate flex flex-row gap-1">
+                    <div className="italic absolute top-[-6px] right-1 text-[9px] text-blue-500 flex flex-row gap-1"> 
+                        <span >{relativeCreatedDate}</span>
+                        {notSameDate && <span >{relativeUpdatedDate}</span>}
+                    </div>
+                    <span 
+                          onClick={() => setToggle(!toggle)}
+
+                        className="absolute *:bg-gray-100 top-1 text-[14px] w-full truncate"
+                    >{data?.title}</span>
+                  </div> 
               </div>
           }
           {/* Second Option open with description */}
@@ -157,15 +197,29 @@ export const CardItem = ({
               <div className ='flex flex-col h-full'>
                   <div className ='flex flex-row justify-between'>
                      
-                      <div className="relative bg-gray-100  w-full hover:bg-gray-200 text-rose-500 italic font-sans truncate flex flex-row gap-1">
-                        <span className="absolute top-[-7px] right-1 text-[8px] text-blue-500">{relativeCreatedDate}</span>
-                        <span className="absolute bg-gray-100 top-2 text-[11px] truncate">{actionText}</span>
+                      <div className="relative bg-gray-100  w-full hover:bg-gray-200 text-rose-500 italic font-sans truncate text-ellipsis flex flex-row gap-1">
+                        <div className="italic absolute top-[-6px] right-1 text-[9px] text-blue-500 flex flex-row gap-1">
+                          <span >{relativeCreatedDate}</span>
+                          {notSameDate && <span >{relativeUpdatedDate}</span>}
+                        </div>
+                        <span 
+                            className="absolute bg-gray-100 top-[10px] text-[11px] w-full truncate"
+                            onClick={() => setToggle(!toggle)}
+
+                          >{actionText}</span>
                       </div>
-                      
-                     
-                     { editable &&  <div className="text-[11px]">
+                     { editable?  <div className="text-[11px]">
                         <Button
-                          onClick={() => cardModal.onOpen(data.id,"")}
+                          onClick={() => cardModal.onOpen(data.id, boardId)}
+                          className="h-auto px-2 py-1.5 w-full justify-end text-muted-foreground text-[11px] hover:text-sm"
+                          size="sm"
+                          variant="ghost"
+                      >
+                       { editableIcon}                   
+                        </Button>
+                      </div>:<div className="text-[11px]">
+                        <Button
+                          onClick={() =>{}}
                           className="h-auto px-2 py-1.5 w-full justify-end text-muted-foreground text-[11px] hover:text-sm"
                           size="sm"
                           variant="ghost"
@@ -175,19 +229,79 @@ export const CardItem = ({
                       </div>
                     }
                   </div>
-                  
-                 
+                 { 
+                  data?.tagIDs?.length>0 && 
+                    <div className="flex flex-wrap gap-1 mt-1"> 
+                      {
+                        data.tagIDs?.map((tag, index) => {
+                          return (
+                            <span className="bg-orange-300 rounded-sm text-white" key={index}
+                            onClick={()=>{setCategory(tag)}}
+                            > {findLabelByValue(tagNames, tag)}</span>
+                            )
+                          
+                        })
+                      }
+                    </div>
+                  }
                   <div 
                       className={cn(
                         "static-editor max-h-[50vh] overflow-x-hidden ",
                          cardYscroll? "overflow-y-auto" : "overflow-y-hidden" 
                       )}
                   >
-                       <Editor 
+                      <Editor 
                         editorState={EditorState.createWithContent(getTextFromEditor2(data),compositeDecorator)} 
                         readOnly 
                         onChange={() => {}} // Empty dummy function
-                      />
+                      /> {editable && data.taggedUsers.length>0 &&
+                        <div>
+                            <h2 className='flex gap-2 text-lg '>Tagged Users:</h2> 
+                            <div className="flex flex-wrap gap-2 mt-3 mb-2" 
+                            key={index +'6'}>
+                            
+                            {
+                                data.taggedUsers?.map((tag, index) => {
+                                    return (
+                                    <span 
+                                        className="bg-gray-400 md:bg-gray-500 rounded-sm text-white text-xs" key={index}
+                                        // onClick={()=>{ setCategory(tag); }}
+                                    > 
+                                        {findLabelByValue(userNames, tag.userId)}
+                                    </span>
+                                    )
+                                })
+                                }  
+                            </div>
+                        </div>
+    
+                        }
+                         {/* Show and edit comment */}
+                    {
+                     !editable && iamtagged && <div className="flex flex-col gap-1">
+                            <span className="text-sm text-orange-640 rounded-sm  bg-blue-400 text-white mb-3">I am tagged</span>
+                            {/* Add or Edit */}
+                            {!ihavecomment &&<span className="text-sm text-orange-640 rounded-sm  bg-blue-400 text-white mb-3"
+                                      onClick={() => commentModal.onOpen(mycommentid,data.id, boardId)}
+                                      >{'Add Comment'}</span>}
+                            {/* Show comment  */}
+                            { ihavecomment && <CommentShow data={ihavecomment} cardId={data.id} boardId={boardId} /> }    
+                          
+                    </div>
+                    }
+                    {/* I am the owner */}
+                      {editable && data.comments?.length>0 &&
+                    <div>
+                        <div className="flex flex-wrap gap-2 mt-3 mb-2" 
+                        key={index +'7'}>
+                        
+                        <CommentList data={data?.comments} userNames={userNames} /> 
+                        </div>
+                    </div>
+
+                  }
+                     
+                         
                   </div>
               </div>
             }
@@ -196,17 +310,31 @@ export const CardItem = ({
          
             <div className ='flex flex-col h-full'>
                 <div className ='flex flex-row justify-between'>
-                      {/* <div className="bg-gray-100 text-[11px] w-full hover:bg-gray-200 text-rose-500 italic font-sans truncate">
-                          {actionText}
-                      </div> */}
-                      <div className="relative bg-gray-100 text-[11px] w-full hover:bg-gray-200 text-rose-500 italic font-sans truncate">
-                        <span className="absolute top-[-7px] right-1 text-[8px] text-blue-500">{relativeCreatedDate}</span>
-                        <span className="absolute bg-gray-100 top-2 text-[11px] truncate">{actionText}</span>
+                      <div className="relative bg-gray-100 text-[11px] w-full hover:bg-gray-200 text-rose-500 italic font-sans truncate text-ellipsis">
+                        <div className="italic absolute top-[-6px] right-1 text-[9px] text-blue-500 flex flex-row gap-1">
+                          <span >{relativeCreatedDate}</span>
+                          {notSameDate && <span >{relativeUpdatedDate}</span>}
+                        </div>
+                       
+                        <span 
+                          className="absolute bg-gray-100 top-[10px] text-[11px] w-full truncate"
+                          onClick={() => setToggle(!toggle)}
+
+                          >{actionText}</span>
                       </div>
                      
-                      { editable && <div className="text-[11px]">
+                      { editable ? <div className="text-[11px]">
                         <Button
-                          onClick={() => cardModal.onOpen(data.id,"")}
+                          onClick={() => cardModal.onOpen(data.id,boardId)}
+                          className="h-auto px-2 py-1.5 w-full justify-end text-muted-foreground text-[11px] hover:text-sm"
+                          size="sm"
+                          variant="ghost"
+                      >
+                          {editableIcon}
+                        </Button>
+                      </div>:<div className="text-[11px]">
+                        <Button
+                          onClick={() => {}}
                           className="h-auto px-2 py-1.5 w-full justify-end text-muted-foreground text-[11px] hover:text-sm"
                           size="sm"
                           variant="ghost"

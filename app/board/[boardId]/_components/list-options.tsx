@@ -100,7 +100,7 @@ export const ListOptions = ({
   };
 
 
-  const onReorderByData = (formData: FormData) => {
+  const onReorderByDate = (formData: FormData) => {
       const id = formData.get("id") as string;
       const boardId = formData.get("boardId") as string;
       //console.log("......HERE", id, boardId)
@@ -151,7 +151,7 @@ export const ListOptions = ({
         </form>
 
         <form  id="id2"
-               name= "name2"action={onReorderByData}>
+               name= "name2"action={onReorderByDate}>
           <input hidden name="id" id="id" value={data.id} />
           <input hidden name="boardId" id="boardId" value={data.boardId} />
           <FormSubmit

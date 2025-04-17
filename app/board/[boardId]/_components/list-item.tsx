@@ -4,17 +4,15 @@ import { ElementRef, useEffect, useRef, useState } from "react";
 import { Draggable, Droppable } from "@hello-pangea/dnd";
 
 import { cn } from "@/lib/utils";
-import { ListWithCards } from "@/types";
+import { ListWithCards, ListWithCards2, SafeListWithCards3 } from "@/types";
 
 import { CardForm } from "./card-form";
 import { CardItem } from "./card-item";
 import { ListHeader } from "./list-header";
 import { useCardReadModeStore } from "@/hooks/use-cardReadMode";
-import { toast } from "sonner";
-//import { useEventListener } from "usehooks-ts";
 
 interface ListItemProps {
-  data: ListWithCards;
+  data: ListWithCards2;
   index: number;
   dragMode:boolean;
   isOwnerOrAdmin:boolean,
@@ -22,7 +20,12 @@ interface ListItemProps {
   cardReadMode:boolean;
   cardYscroll:boolean;
   cardShowTitle:boolean;
+  tagNames:any;
+  userNames:any;
+  isOrdered:boolean;
   // setCardReadMode: () => void;
+  setCategory: (category: string | null) => void;
+  
 };
 
 export const ListItem = ({
@@ -34,6 +37,10 @@ export const ListItem = ({
   cardReadMode,
   cardYscroll,
   cardShowTitle,
+  tagNames,
+  userNames,
+  setCategory,
+  isOrdered,
   // setCardReadMode
 }: ListItemProps) => {
   const textareaRef = useRef<ElementRef<"textarea">>(null);
@@ -41,7 +48,7 @@ export const ListItem = ({
   const timeoutId = useRef<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   
-  // const {readMode,setReadModeState}= useCardReadModeStore();
+  const {readMode,setReadModeState}= useCardReadModeStore();
 
   const disableEditing = () => {
     setIsEditing(false);
@@ -57,7 +64,7 @@ export const ListItem = ({
       textareaRef.current?.focus();
     });
   };
-// useEffect(()=>{toast.message('nnnnn')},[readMode])
+useEffect(()=>{},[readMode])
   return (
     <Draggable isDragDisabled={!dragMode}  draggableId={data.id} index={index}>
       {(provided) => (
@@ -69,7 +76,9 @@ export const ListItem = ({
         >
           <div 
             {...provided.dragHandleProps}
-            className="w-full rounded-md bg-[#f1f2f4] shadow-md pb-2"
+              className={cn("w-full rounded-md bg-[#f1f2f4] shadow-md pb-2",  
+                                  isOrdered?"bg-blue-100 rounded":"",
+                                  )}
           >
             <ListHeader 
               onAddCard={enableEditing}
@@ -92,10 +101,11 @@ export const ListItem = ({
                   {...provided.droppableProps}
                   className={cn(
                     "mx-1 px-1 py-0.5 flex flex-col gap-y-2",
-                    data.cards.length > 0 ? "mt-2" : "mt-0",
+                    // isOrdered?"bg-orange-50 rounded":"",
+                     data.cards.length > 0 ? "mt-2" : "mt-0",
                   )}
                 >
-                  {data.cards.map((card, index) => (
+                  {data?.cards.map((card, index) => (
                     <CardItem
                       index={index}
                       key={card.id}
@@ -106,8 +116,12 @@ export const ListItem = ({
                       currentUserId={currentUserId}
                       cardReadMode={cardReadMode}
                       // setCardReadMode={setCardReadMode}
+                      boardId={data.id}
                       cardYscroll={cardYscroll}
                       cardShowTitle={cardShowTitle}
+                      tagNames={tagNames}
+                      userNames={userNames}
+                      setCategory={setCategory}
                     />
                   ))}
                   {provided.placeholder}
