@@ -26,20 +26,30 @@ export default async function updateCardUserId() {
     });
 
     //Update all list
-  const transaction = cards.map((card) => 
-      prisma.card.update({
-            where: {
-                id: card.id,
-            },
-            data: {
-                userId: "" //card.list.board?.userId,
-            }
-      }))
+  // const transaction = cards.map((card) => 
+  //     prisma.card.update({
+  //           where: {
+  //               id: card.id,
+  //           },
+  //           data: {
+  //               userId: card.list.board?.userId || null,
+  //           }
+  //     }))
+  
+  const updates = cards
+  .filter((card) => card.list?.board?.userId) // Simplified filter: only keep cards with userId
+  .map((card) => {
+    const userId = card.list!.board!.userId!; // Non-null assertion since we've filtered
 
- const updateCards = await prisma.$transaction(transaction);
- //console.log("???????????????????????????????????????")
-   //console.log(updateCards)
-    return updateCards;
+    return prisma.card.update({
+      where: { id: card.id },
+      data: { userId },
+    });
+  });
+
+const result = await prisma.$transaction(updates); // No need to filter nulls anymore
+
+return result;
   } catch (error: any) {
     throw new Error(error);
   }

@@ -21,10 +21,48 @@ export default async function getBoards() {
         include: {
           lists: {
             include: {
-              cards: true,
+              cards:{
+                include: { 
+                  tags: true ,
+                  cardImages:true,
+                  taggedUsers: {
+                          include: {
+                          user: {
+                              select: {
+                              // Include fields you want from the User model
+                              id: true,
+                              name: true,
+                              email: true,
+                              // ... other fields
+                              },
+                          },
+                          },
+                   },
+                 comments:{
+                          include: {
+                            user: {
+                                select: {
+                                //  Include fields you want from the User model
+                                id: true,
+                                name: true,
+                                email: true,
+                                //  ... other fields
+                                },
+                            },
+                          }
+                  }
+          
+                },
+              }
             },
           },
           user:true,
+          views:true,
+          // views: {
+          //   select: {
+          //     _count: true, // Simply count the number of BoardView records
+          //   },
+          // },
         },
       });
 
@@ -43,10 +81,47 @@ export default async function getBoards() {
         include: {
           lists: {
             include: {
-              cards: true,
+              cards:{
+                include: { tags: true ,
+                   
+                  taggedUsers: {
+                          include: {
+                          user: {
+                              select: {
+                              // Include fields you want from the User model
+                              id: true,
+                              name: true,
+                              email: true,
+                              // ... other fields
+                              },
+                          },
+                          },
+                      },
+                  comments:{
+                        include: {
+                          user: {
+                              select: {
+                              //  Include fields you want from the User model
+                              id: true,
+                              name: true,
+                              email: true,
+                              //  ... other fields
+                              },
+                          },
+                        }
+                    }
+              
+                  },
+              }
             },
           },
           user:true,
+          views:true,
+          // views: {
+          //   select: {
+          //     _count: true, // Simply count the number of BoardView records
+          //   },
+          // },
         },
       });
      
@@ -59,7 +134,7 @@ export default async function getBoards() {
       ...board,
       //check if user has access roles list inside of project
       lists:board.lists.filter(list =>{ 
-        const isOwner = (board.userId ==currentUser.id)
+        const isOwner = (board?.userId ==currentUser.id)
         const isAdminOrOwner = isOwner || currentUser.isAdmin
         const listCreator =(list.userId ==currentUser.id)
         return ((list.visible || isAdminOrOwner || listCreator) && list.active); 
@@ -68,28 +143,30 @@ export default async function getBoards() {
             userId:x.userId ==null?"":x.userId ,//reference added after
             cards: x.cards.filter(card => {
               //check if user has access role card of list
-              const isOwner =(board.userId ==currentUser.id)
+              const isOwner =(board?.userId ==currentUser.id)
               const isAdminOrOwner = isOwner || currentUser.isAdmin
               const cardCreator =(card.userId==currentUser.id)
               return ((card.visible || isAdminOrOwner || cardCreator) && card.active)
             }).map((card)=>({
                 ...card,
                 userId:card.userId ==null? "":card.userId,//reference added after
-                createdAt: card.createdAt.toString(),
+                createdAt: card.createdAt? card.createdAt.toString():null,
                 updatedAt: card.updatedAt.toString(),
               })
             ),
-            createdAt: x.createdAt.toString(),
+            createdAt: x.createdAt?x.createdAt.toString():null,
             updatedAt: x.updatedAt.toString(),
         })
       ),
-      createdAt: board.createdAt.toString(),
+      createdAt: board.createdAt? board.createdAt.toString():null,
       updatedAt: board.updatedAt.toString(),
       user:"",
-      user_image:board?.user?.image || ""
+      user_image:board?.user && board?.user.image || "",
+      views:board.views.reduce((acc, _views) => acc  +  (_views.viewCount||0), 0)
+ 
     })
   );
- 
+    //console.log('This is now ok but an array:',safeBoards?safeBoards[0]:safeBoards)
     return safeBoards;
   } catch (error: any) {
     throw new Error(error);

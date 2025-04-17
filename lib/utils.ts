@@ -1,9 +1,11 @@
-import { SafeBoard, SafeCard } from "@/app/types";
-import { ListWithCards } from "@/types";
+import { SafeBoard, SafeCard, SafeCardWithBoard } from "@/app/types";
+import { CardWithList2, ListWithCards, ListWithCards2, SafeBoard2, SafeCardWithList2, SafeListWithCards3 } from "@/types";
 import { Card } from "@prisma/client";
 import { type ClassValue, clsx } from "clsx"
 import { differenceInDays } from "date-fns";
+import { AlarmClock } from "lucide-react";
 import moment from "moment";
+import { List } from "postcss/lib/list";
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
@@ -69,16 +71,94 @@ export const getFactors =(x:number):number[]=>{
     return closest
   };
 
-export const getCardsFromSafeBoard = (data: SafeBoard): SafeCard[] => {
+export const getCardsFromSafeBoard0 = (data: SafeBoard2): SafeCardWithList2[] => {
   // Combine all cards from all lists into a single array
-  const allCards: SafeCard[] = [];
+  let allCards: SafeCardWithList2[] = [];
   data.lists.forEach((list) => allCards.push(...list.cards));
+  
+ allCards?.sort((a, b) => 
+                                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                       );
+                 
+  return allCards;  
+};
+export const getCardsFromSafeBoard2 = (data: SafeBoard2): SafeCardWithList2[] => {
+  // Combine all cards from all lists into a single array
+  let allCards: SafeCardWithList2[] = [];
+  data.lists.forEach((list) => allCards.push(...list.cards));
+
+  // Sort cards by updatedAt in descending order (newest to oldest)
+  allCards.sort((a, b) => {
+    const dateA = new Date(a.updatedAt);
+    const dateB = new Date(b.updatedAt);
+    return (dateB.getTime() - dateA.getTime()); // Descending order
+  });
+
+  // Optional: Sort by createdAt as well for a layered sorting (optional)
+  allCards.sort((a, b) => {
+    const dateA = new Date(a.createdAt);
+    const dateB = new Date(b.createdAt);
+
+    // If updatedAt values are the same, sort by createdAt in descending order
+    if (dateA.getTime() === dateB.getTime()) {
+      return dateB.getTime() - dateA.getTime(); // Descending order
+    }
+    return 0; // No further sorting needed if updatedAt differs
+  });
+//  console.log('xxx---.',allCards)
   return allCards;
 };
 
-export const getCardsFromLists = (data: ListWithCards[], asc:Boolean=true): Card[] => {
+export const getCardsFromSafeBoard = (data: SafeBoard2): SafeCardWithList2[] => {
+  //60 minutes...
   // Combine all cards from all lists into a single array
-  const allCards: Card[] = [];
+  let allCards: SafeCardWithList2[] = [];
+  data.lists.forEach((list) => allCards.push(...list.cards));
+
+  // Sort cards by updatedAt in descending order (newest to oldest)
+  allCards.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+
+  // Sort by createdAt within a one-minute window of updatedAt
+  allCards.sort((a, b) => {
+    const updatedAtDiff = new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    if (Math.abs(updatedAtDiff) <= 1000*60*60*24) {  // Check for 60minute one-minute difference*24hours
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(); // Descending order
+    }
+    return updatedAtDiff;  // Maintain original updatedAt sort
+  });
+
+  return allCards;
+};
+
+export const getCardsFromSafeBoardOneday = (data: SafeBoard2): SafeCardWithList2[] => {
+  //within one day
+  // Combine all cards from all lists into a single array
+  let allCards: SafeCardWithList2[] = [];
+  data.lists.forEach((list) => allCards.push(...list.cards));
+
+  // Single sort with custom comparison logic
+  allCards.sort((a, b) => {
+    const dateA = new Date(a.updatedAt);
+    const dateB = new Date(b.updatedAt);
+
+    // Sort by updatedAt in descending order (newest to oldest)
+    if (dateA.getTime() !== dateB.getTime()) {
+      return dateB.getTime() - dateA.getTime(); // Descending order
+    }
+
+    // If updatedAt is the same day, sort by createdAt in descending order
+    const dateAStart = new Date(dateA.getFullYear(), dateA.getMonth(), dateA.getDate());
+    const dateBStart = new Date(dateB.getFullYear(), dateB.getMonth(), dateB.getDate());
+    return dateBStart.getTime() - dateAStart.getTime(); // Descending order
+  });
+
+  return allCards;
+};
+
+// export const getCardsFromLists = (data: ListWithCards[], asc:Boolean=true): CardWithList2[] => {
+export const getCardsFromLists = (data: ListWithCards2[], asc:Boolean=true): CardWithList2[] => {
+  // Combine all cards from all lists into a single array
+  let allCards: CardWithList2[] = [];
   data.forEach((list) => allCards.push(...list.cards));
   allCards.sort((a,b)=>{ 
      let a_date= new Date(a.updatedAt)  
@@ -92,45 +172,73 @@ export const getCardsFromLists = (data: ListWithCards[], asc:Boolean=true): Card
   })
   return allCards;
 };
+ export const getOrderedListWithCards=(data:ListWithCards2[])=>{
+  const newData=[...data]
+  let orderedData = newData?.map((list)=>({
+    ...list,
+     cards: list.cards?.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+  }))
 
-// export const getLatestCard2 = (cards: SafeCard[]): SafeCard  => {
-//   // Sort cards by updatedAt in descending order
-//   const sortedCards = cards?.sort((a, b) => 
-//                                 new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-//                                );
-  
-//   return sortedCards[0];
-// };
+  orderedData = newData?.map((list)=>({
+     ...list,
+     cards: list.cards?.sort((a, b) => {
+                          const updatedAtDiff = new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+                          if (Math.abs(updatedAtDiff) <= 1000*60*60*24) {  // Check for 60minute one-minute difference*24hours
+                            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(); // Descending order
+                          }
+                          return updatedAtDiff;  // Maintain original updatedAt sort
+                        })
+  }))
 
-export const getLatestCard = (cards: SafeCard[]): SafeCard  => {
+  return orderedData
+}
+   
+
+export const getLatestCard = (cards: SafeCardWithList2[]):SafeCardWithList2  => {
   // Sort cards by updatedAt in descending order
-  const sortedCards = cards?.sort((a, b) => 
+  // changedlogic
+  let cardsCopy = [...cards];
+
+  let sortedCards = cardsCopy?.sort((a, b) => 
+                                new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+                               );
+  
+  return sortedCards[0];
+};
+export const getLatestCard2 = (cards: SafeCard[]): SafeCard  => {
+  // Sort cards by updatedAt in descending order
+  let cardsCopy = [...cards];
+
+  const sortedCards = cardsCopy?.sort((a, b) => 
                                 new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
                                );
   
   return sortedCards[0];
 };
 
-export  function sortDates (data:SafeBoard[]){
+export  function sortDates (data:SafeBoard2[]){
   //sord board by updatedAt in descending order
-  data?.sort(
+  //project with latest insert or update(changes) becomes top on theeck...
+  let dataCopy = [...data];
+
+  dataCopy?.sort(
       (a,b) =>{
-             //----------cover for cases there are empy card in all lists of a board----------------
-             const a_cards=getCardsFromSafeBoard(a);
-             let a_date= new Date(a.updatedAt)  
-             if (a_cards.length!==0){
+             //----------cover for cases there are empty card in all lists of a board----------------
+            const a_cards=getCardsFromSafeBoard(a);
+            let a_date= new Date(a.updatedAt)  
+            if (a_cards.length!==0){
                a_date= new Date(getLatestCard(a_cards).updatedAt) 
-             }
-             const b_cards=getCardsFromSafeBoard(b);
-             let b_date= new Date(b.updatedAt)  
-             if (b_cards.length!==0){
+            }
+            const b_cards=getCardsFromSafeBoard(b);
+            let b_date= new Date(b.updatedAt)  
+            if (b_cards.length!==0){
                b_date= new Date(getLatestCard(b_cards).updatedAt) 
-             }
+            }
             //  ------------------------------------------------------------------------------------
              return (b_date.getTime() - a_date.getTime())
            }
       ); // Sort by ascending date
-  return data;
+  return dataCopy;
   
  }
 
@@ -213,7 +321,7 @@ export function getDateTodayYesterdayORFormatedDate(inputX:string){
  
 }
 
-export function isJsonStringEditorCompatible(str:string) {
+export function isJsonStringEditorCompatible(str:any|null|undefined) {
      
   try {
       JSON.parse(str);
@@ -226,6 +334,177 @@ export function isJsonStringEditorCompatible(str:string) {
       //console.log('Satisfied')
   } catch (e) {
       //console.log('Error', e.error, str)
+      return false;
+  }
+  return true;
+}
+
+export function getGreatThanZeroOrEmptyStr(val:number,output:string){
+  if (val>0){
+   return output;
+  }
+  return ''
+ }
+ export function getTotal(data:ListWithCards2[]){
+   let listCount=0 ;
+   let cardCount=0;
+   let completed=0;
+   let wip=0;
+   let untagged=0
+   let stabbled =0
+ 
+   data?.map(list =>{ 
+     // if the is is visible show it
+     // already filter
+      listCount=listCount +1; 
+      cardCount=cardCount + list.cards.length
+      list.cards?.map((x)=>{
+       if (x?.progress=='complete'){
+         completed=completed+1;
+       }else if(x?.progress=='wip'){
+         wip=wip+1;
+       }else if(x?.progress=='stabbled'){
+         stabbled=stabbled+1
+       }else{
+         untagged=untagged+1
+       }
+      });
+   });
+   return{listCount,cardCount,completed,wip,untagged,stabbled}
+ }
+ export function  getProgressStatus(b:any){
+   const completedStr= getGreatThanZeroOrEmptyStr(b.completed,`, comp=${b.completed}(${Math.round(b.completed*100/b.cardCount)}%)`)  
+   const wipStr= getGreatThanZeroOrEmptyStr(b.wip,`, wip=${b.wip}`)  
+   const untaggedStr= getGreatThanZeroOrEmptyStr(b.untagged,`, utg=${b.untagged}`)  
+   const stabbledStr= getGreatThanZeroOrEmptyStr(b.stabbled,`, sta=${b.stabbled}`)  
+   return `total=${b.cardCount} ${completedStr} ${wipStr} ${untaggedStr} ${stabbledStr}`
+ }
+
+ export function compareStringArrays(array1:string[], array2 :string[]) {
+  // Check if lengths are different
+  if (array1.length !== array2.length) {
+    return false;
+  }
+
+  // Sort both arrays
+  array1.sort();
+  array2.sort();
+
+  // Compare elements
+  for (let i = 0; i < array1.length; i++) {
+    if (array1[i] !== array2[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+type LabeledValue = { value: string; label: string };
+
+// // Sample arrays (replace with your actual data)
+// const labeledArray: LabeledValue[] = [
+//   { value: 'apple', label: 'Apple' },
+//   { value: 'banana', label: 'Banana' },
+//   { value: 'orange', label: 'Orange' },
+// ];
+
+// const valuesOnlyArray: string[] = ['banana', 'grape', 'apple'];
+
+// Function to get labels from values efficiently using Set and Map
+export function getLabelsFromValues(labeledArray: LabeledValue[], valuesOnlyArray: string[]): string[] {
+  // Create a Set to efficiently check for value existence in labeledArray
+  const valueSet = new Set(labeledArray.map(item => item.value));
+
+  // Create a Map for faster label lookup by value
+  const labelMap = new Map(labeledArray.map(item => [item.value, item.label]));
+
+  return valuesOnlyArray.filter(value => valueSet.has(value))
+                        .map(value => labelMap.get(value)!) // Use non-null assertion for certainty
+}
+
+export function getValuesFromLabels(labeledArray: LabeledValue[], labelsOnlyArray: string[]): string[] {
+  // Create a Set to efficiently check for label existence in labeledArray
+  const labelSet = new Set(labeledArray.map(item => item.label));
+
+  // Create a Map for faster value lookup by label
+  const valueMap = new Map(labeledArray.map(item => [item.label, item.value]));
+
+  return labelsOnlyArray.filter(label => labelSet.has(label))
+    .map(label => valueMap.get(label)!); // Use non-null assertion for certainty
+}
+export function getLabelsAndValuesFromValues(
+  labelValueArray: LabeledValue[],
+  valueArray: string[]
+): LabeledValue[] {
+  return valueArray?.map((value) =>
+    labelValueArray?.find((obj) => obj.value === value) || { value, label: '' }
+  );
+}
+export function getLabelsAndValuesFromValues2(
+  labelValueArray: LabeledValue[],
+  valueArray: ValueLabelObject2[]
+): LabeledValue[] {
+  return valueArray?.map((value) =>
+    labelValueArray?.find((obj) => obj.value ===value.userId) || { value:value.userId, label: '' }
+  );
+}
+
+interface ValueLabelObject {
+  value:  string;
+  label: string;
+}
+interface ValueLabelObject2 {
+  id: string;
+  cardId: string;
+  userId:string;
+}
+
+export function findLabelByValue(data: ValueLabelObject[], searchValue: number | string): string | undefined {
+  const foundObject = data.find(item => item.value === searchValue);
+  return foundObject ? foundObject.label : undefined;
+}
+
+// Assuming you have functions for truncation and formatting
+export function truncateString(text: string, maxLength: number): string {
+  // Implement your truncation logic here
+  return text.slice(0, maxLength) + (text.length > maxLength ? "..." : "");
+}
+
+export function NumberFormatter(value: number): string {
+  // Implement your formatting logic here (e.g., comma separators, decimals)
+  return value.toFixed(2); // Example formatting to two decimal places
+}
+// // Example usage:
+// const data: ValueLabelObject[] = [
+//   { value: 1, label: 'One' },
+//   { value: 2, label: 'Two' },
+//   { value: 3, label: 'Three' }
+// ];
+
+// const searchValue = 2;
+// const label = findLabelByValue(data, searchValue);
+
+// console.log(label); // Output: 'Two'
+
+export function isWithinOneDay(date1: string, date2: string | moment.Moment): boolean {
+  const momentDate1 = moment(date1);
+  const momentDate2 = moment(date2);
+
+  // Calculate the difference in days
+  const daysDifference = momentDate2.diff(momentDate1, 'days');
+
+  // Check if the difference is within one day
+  return daysDifference <= 1;
+}
+
+
+
+
+export function isJsonString(str:string) {
+  try {
+      JSON.parse(str);
+  } catch (e) {
       return false;
   }
   return true;

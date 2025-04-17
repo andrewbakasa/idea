@@ -21,8 +21,61 @@ export default async function getArchivedBoards() {
           },
         },
         user:true,
+        views:true,
+        // views: {
+        //   select: {
+        //     _count: true, // Simply count the number of BoardView records
+        //   },
+        // },
       },
     });
+
+    // const boards = await prisma.board.findMany({
+    //   where: {
+    //     active:false,
+    //   },
+    //   orderBy: { updatedAt: "desc" },
+    //   include: {
+    //     lists: {
+    //       include: {
+    //         cards:{
+    //           include: { tags: true ,
+                 
+    //             taggedUsers: {
+    //                     include: {
+    //                     user: {
+    //                         select: {
+    //                         // Include fields you want from the User model
+    //                         id: true,
+    //                         name: true,
+    //                         email: true,
+    //                         // ... other fields
+    //                         },
+    //                     },
+    //                     },
+    //              },
+    //            comments:{
+    //                     include: {
+    //                       user: {
+    //                           select: {
+    //                           //  Include fields you want from the User model
+    //                           id: true,
+    //                           name: true,
+    //                           email: true,
+    //                           //  ... other fields
+    //                           },
+    //                       },
+    //                     }
+    //             }
+        
+    //           },
+    //         }
+    //       },
+    //     },
+    //     user:true,
+    //     views:true,
+    //   },
+    // });
     //24 January 2024
     const safeBoards = boards.map((board) => ({
         ...board,
@@ -43,7 +96,10 @@ export default async function getArchivedBoards() {
         createdAt: board.createdAt.toString(),
         updatedAt: board.updatedAt.toString(),
         user:"",
-        user_image:board?.user?.image || ""
+        user_image:board?.user && board?.user.image || "",
+       // views:board.views
+       views:board.views.reduce((acc, _views) => acc  +  (_views.viewCount||0), 0)
+ 
       })
     );
 
