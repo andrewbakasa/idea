@@ -2,13 +2,40 @@
 import React, { useState, useEffect } from 'react';
 import NavLinks from './NavLinks';
 import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
+import UserMenu from './UserMenu';
+import { SafeUser } from '@/app/types';
 
-interface NavBarProps {}
 
-const NavBar: React.FC<NavBarProps> = () => {
+interface NavbarProps {
+  currentUser?: SafeUser | null;
+}
+
+const NavBar: React.FC<NavbarProps> = ({
+  currentUser,
+  }) => {
   const [top, setTop] = useState<boolean>(!window.scrollY);
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleNavigate = (href: string) => {
+    if (href.startsWith('#')) {
+      if (pathname === '/') {
+        const targetId = href.substring(1);
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          targetElement.scrollIntoView({ behavior: 'smooth' });
+        }
+      } else {
+        router.push('/' + href);
+      }
+    } else {
+      router.push(href);
+    }
+    
+  };
   const handleClick = () => {
     setIsOpen(!isOpen);
   };
@@ -34,11 +61,12 @@ const NavBar: React.FC<NavBarProps> = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4 flex items-center justify-between">
         {/* Logo / Brand */}
         <div className="flex items-center">
-          <Link href="/#hero" scroll={false} className="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
+          <Link href="#hero" onClick={(e) => { e.preventDefault(); handleNavigate("#hero"); }} className="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
             <h1 className="font-extrabold text-2xl md:text-3xl text-blue-900 hover:text-blue-700 transition duration-200">
               IDEAM
             </h1>
           </Link>
+       
         </div>
 
         {/* Mobile Menu Button */}
@@ -100,8 +128,10 @@ const NavBar: React.FC<NavBarProps> = () => {
             </button>
           </div>
           {/* Mobile Menu Links */}
+          
+         
           <div className="flex flex-col space-y-4">
-            <NavLinks onLinkClick={handleLinkClick} />
+            <NavLinks onLinkClick={handleLinkClick} currentUser={currentUser} />
           </div>
         </div>
       </div>

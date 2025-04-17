@@ -10,6 +10,8 @@ import ClientOnly from './components/ClientOnly';
 import getCurrentUser from './actions/getCurrentUser';
 import { Toaster } from "sonner";
 import { cn } from '@/lib/utils';
+import Hero from './components/Hero';
+import NavBar from './components/navbar/NavBar2';
 export const metadata = {
   title: 'PM',
   description: 'Project Management',
@@ -38,6 +40,9 @@ export default async function RootLayout({
               <LoginModal />
              <RegisterModal />
               <ModalProvider />
+             
+              
+              <NavBar currentUser={currentUser} />
               <div className={cn("pb-5 h-full",paddingState)}>
                   {children}
               </div>

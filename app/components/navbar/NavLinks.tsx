@@ -2,12 +2,15 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
+import UserMenu from './UserMenu';
+import { SafeUser } from '@/app/types';
 
 interface NavLinksProps {
   onLinkClick?: () => void; // Optional function prop to handle link clicks
+  currentUser?: SafeUser | null;
 }
 
-const NavLinks: React.FC<NavLinksProps> = ({ onLinkClick }) => {
+const NavLinks: React.FC<NavLinksProps> = ({  currentUser,onLinkClick }) => {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -37,7 +40,7 @@ const NavLinks: React.FC<NavLinksProps> = ({ onLinkClick }) => {
       <Link href="#services" onClick={(e) => { e.preventDefault(); handleNavigate("#services"); }} className="px-4 font-extrabold text-gray-500 hover:text-blue-900 block py-2">
         Services
       </Link>
-      <Link href="/" onClick={(e) => { e.preventDefault(); handleNavigate("/"); }} className="px-4 font-extrabold text-gray-500 hover:text-blue-900 block py-2">
+      <Link href="#portfolio" onClick={(e) => { e.preventDefault(); handleNavigate("#portfolio"); }} className="px-4 font-extrabold text-gray-500 hover:text-blue-900 block py-2">
         Portfolio
       </Link>
       <Link href="/contact#contact" onClick={(e) => { e.preventDefault(); handleNavigate("/contact#contact"); }} className="px-4 font-extrabold text-gray-500 hover:text-blue-900 block py-2">
@@ -50,6 +53,9 @@ const NavLinks: React.FC<NavLinksProps> = ({ onLinkClick }) => {
       >
         Demo our products
       </Link>
+      {/* <> */}
+      <UserMenu currentUser={currentUser} />
+      {/* </> */}
     </>
   );
 };

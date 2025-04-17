@@ -8,9 +8,9 @@ const Hero = () => {
   return (
     <>
       <div className="hero" id='hero'>
-        <div>
+        {/* <div>
           <NavBar />
-        </div>
+        </div> */}
 
         <div className="m-auto overflow-hidden mx-4 mt-8 lg:mt-4 p-2 md:p-12 h-5/6" data-aos="zoom-in">
           <div id='hero' className="flex flex-col lg:flex-row py-8 justify-between text-center lg:text-left">

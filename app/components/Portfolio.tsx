@@ -28,7 +28,7 @@ const Portfolio: React.FC<PortfolioProps> = () => {
                 </p>
                 <div className="flex justify-center my-4">
                   <Link
-                    href="/get-demo"
+                    href="/media"
                     className="text-white bg-blue-900 hover:bg-blue-800 inline-flex items-center justify-center w-full px-6 py-3 my-4 text-lg shadow-xl rounded-xl"
                   >
                     Schedule Demo
