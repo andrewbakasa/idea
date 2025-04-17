@@ -14,14 +14,16 @@ import { FormInput } from "@/components/form/form-input";
 
 interface HeaderProps {
   data: CardWithList;
+  boardId:string;
 }
 
 export const Header = ({
   data,
+  boardId
 }: HeaderProps) => {
   const queryClient = useQueryClient();
-  const params = useParams();
-
+  // const params = useParams();
+ 
   const { execute } = useAction(updateCard, {
     onSuccess: (data) => {
       queryClient.invalidateQueries({
@@ -32,7 +34,7 @@ export const Header = ({
         queryKey: ["card-logs", data.id]
       });
 
-      toast.success(`Renamed to "${data.title}"`);
+      toast.success(`Renamed to "${data?.title}"`);
       setTitle(data.title);
     },
     onError: (error) => {
@@ -41,8 +43,8 @@ export const Header = ({
   });
 
   const inputRef = useRef<ElementRef<"input">>(null);
-
-  const [title, setTitle] = useState(data.title);
+// console.log('data', data)
+  const [title, setTitle] = useState(data?.title);
 
   const onBlur = () => {
     inputRef.current?.form?.requestSubmit();
@@ -50,9 +52,9 @@ export const Header = ({
 
   const onSubmit = (formData: FormData) => {
     const title = formData.get("title") as string;
-    const boardId = params?.boardId as string;
-
-    if (title === data.title) {
+    // const boardId = params?.boardId as string;
+    //if same dont persist to DB
+    if (title === data?.title) {
       return;
     }
 
@@ -79,21 +81,32 @@ export const Header = ({
           />
         </form>
         <p className="text-sm text-muted-foreground">
-          in list <span className="underline">{data.list.title}</span>
+          in list <span className="underline">{data?.list?.title}</span>
         </p>
       </div>
     </div>
   );
 };
 
+// Header.Skeleton = function HeaderSkeleton() {
+//   return (
+//     <div className="flex items-start gap-x-3 mb-6">
+//       <Skeleton className="h-6 w-6 mt-1 bg-neutral-200" />
+//       <div>
+//         <Skeleton className="w-24 h-6 mb-1 bg-neutral-200" />
+//         <Skeleton className="w-12 h-4 bg-neutral-200" />
+//       </div>
+//     </div>
+//   );
+// };
 Header.Skeleton = function HeaderSkeleton() {
-  return (
-    <div className="flex items-start gap-x-3 mb-6">
-      <Skeleton className="h-6 w-6 mt-1 bg-neutral-200" />
-      <div>
-        <Skeleton className="w-24 h-6 mb-1 bg-neutral-200" />
-        <Skeleton className="w-12 h-4 bg-neutral-200" />
-      </div>
-    </div>
-  );
-};
+    return (
+      <div className="flex items-start gap-x-3 mb-1 w-full"> {/* Removed mb-6, added w-full */}
+        <Skeleton className="h-5 w-5 mt-1 bg-neutral-200" /> {/* Icon Skeleton */}
+        <div className="w-full">
+          <Skeleton className="h-8 w-[95%] bg-neutral-200 relative -left-1.5 mb-0.5" /> {/* Input Skeleton - matches FormInput styling */}
+          <Skeleton className="h-4 w-1/2 bg-neutral-200" /> {/* List Title Skeleton */}
+        </div>
+      </div>
+    );
+  };
