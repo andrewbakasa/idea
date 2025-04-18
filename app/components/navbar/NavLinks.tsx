@@ -53,9 +53,7 @@ const NavLinks: React.FC<NavLinksProps> = ({  currentUser,onLinkClick }) => {
       >
         Demo our products
       </Link>
-      {/* <> */}
       <UserMenu currentUser={currentUser} />
-      {/* </> */}
     </>
   );
 };

@@ -96,8 +96,8 @@ const Services: React.FC<ServicesProps> = () => {
               </h3>
               <div>
                 <p className="my-3 text-xl text-gray-600 font-semibold">
-                  With over 10 years experience in software analysis and design and a deep understanding of the latest
-                  IT trends and solutions, we provide customized recommendations and strategies to help you improve your
+                  With over 10 years experience in business analysis and design and a deep understanding of the latest
+                  engineering trends and solutions, we provide customized recommendations and strategies to help you improve your
                   operations, reduce costs, and increase efficiency.
                 </p>
               </div>
@@ -113,7 +113,7 @@ const Services: React.FC<ServicesProps> = () => {
               </h3>
               <div>
                 <p className="my-3 text-xl text-gray-600 font-semibold">
-                  We can collaborate with your existing tech team to scale existing software applications or design
+                  We can collaborate with your existing tech team to scale existing business applications or design
                   customized software applications that suits your everyday need and simplifies various processes.
                 </p>
               </div>

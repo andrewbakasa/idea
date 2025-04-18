@@ -13,8 +13,8 @@ import { cn } from '@/lib/utils';
 import Hero from './components/Hero';
 import NavBar from './components/navbar/NavBar2';
 export const metadata = {
-  title: 'PM',
-  description: 'Project Management',
+  title: 'IDEA3M',
+  description: 'Intergrated Design, Engineering Assembly, Manufacture, Maintenance Modelling,Operations',
 }
 
 const font = Nunito({ 

@@ -28,7 +28,7 @@ const Portfolio: React.FC<PortfolioProps> = () => {
                 </p>
                 <div className="flex justify-center my-4">
                   <Link
-                    href="/media"
+                    href="/media?search=smart equipment"
                     className="text-white bg-blue-900 hover:bg-blue-800 inline-flex items-center justify-center w-full px-6 py-3 my-4 text-lg shadow-xl rounded-xl"
                   >
                     Schedule Demo
@@ -63,7 +63,7 @@ const Portfolio: React.FC<PortfolioProps> = () => {
                 </p>
                 <div className="flex justify-center my-4">
                   <Link
-                    href="/get-demo"
+                   href="/media?search=CAD"
                     className="text-white bg-blue-900 hover:bg-blue-800 inline-flex items-center justify-center w-full px-6 py-3 my-4 text-lg shadow-xl rounded-xl"
                   >
                     Schedule Demo
@@ -98,7 +98,7 @@ const Portfolio: React.FC<PortfolioProps> = () => {
                 </p>
                 <div className="flex justify-center my-4">
                   <Link
-                    href="/get-demo"
+                    href="/media?search=business intelligence"
                     className="text-white bg-blue-900 hover:bg-blue-800 inline-flex items-center justify-center w-full px-6 py-3 my-4 text-lg shadow-xl rounded-xl"
                   >
                     Schedule Demo
@@ -132,7 +132,7 @@ const Portfolio: React.FC<PortfolioProps> = () => {
                 </p>
                 <div className="flex justify-center my-4">
                   <Link
-                    href="/get-demo"
+                    href="/media?search=erp"
                     className="text-white bg-blue-900 hover:bg-blue-800 inline-flex items-center justify-center w-full px-6 py-3 my-4 text-lg shadow-xl rounded-xl"
                   >
                     Schedule Demo
