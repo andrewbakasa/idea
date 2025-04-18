@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import UserMenu from './UserMenu';
@@ -13,6 +13,12 @@ interface NavLinksProps {
 const NavLinks: React.FC<NavLinksProps> = ({  currentUser,onLinkClick }) => {
   const router = useRouter();
   const pathname = usePathname();
+  
+  useEffect(() => {
+    // This useEffect will run whenever currentUser changes
+    console.log('currentUser updated in NavLinks:', currentUser);
+    // You can add any logic here that needs to run when currentUser updates
+  }, [currentUser]);
 
   const handleNavigate = (href: string) => {
     if (href.startsWith('#')) {

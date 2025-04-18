@@ -20,6 +20,12 @@ const NavBar: React.FC<NavbarProps> = ({
   const router = useRouter();
   const pathname = usePathname();
 
+  useEffect(() => {
+    // This useEffect will run whenever currentUser changes
+    console.log('currentUser updated in Navbar2:', currentUser);
+    // You can add any logic here that needs to run when currentUser updates
+  }, [currentUser]);
+
   const handleNavigate = (href: string) => {
     if (href.startsWith('#')) {
       if (pathname === '/') {
@@ -96,7 +102,7 @@ const NavBar: React.FC<NavbarProps> = ({
 
         {/* Desktop Navigation */}
         <div className="hidden lg:flex space-x-6">
-          <NavLinks onLinkClick={handleLinkClick} />
+          <NavLinks onLinkClick={handleLinkClick} currentUser={currentUser} />
         </div>
       </div>
 
