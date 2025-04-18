@@ -11,10 +11,10 @@ export async function GET(
     const decodedSearchTerm = decodeURIComponent(params.searchString);    
     const currentUser = await getCurrentUser(); 
    
-    if (!currentUser) {
-      return NextResponse.json([], { status:500 }); // Return a NextResponse with appropriate status
-      //return new NextResponse(`Not logged`, { status: 500 });
-    }
+    // if (!currentUser) {
+    //   return NextResponse.json([], { status:500 }); // Return a NextResponse with appropriate status
+     
+    // }
    
     const cards = await prisma.card.findMany({
       include: {
@@ -42,9 +42,9 @@ export async function GET(
     });
 
     const filteredCards = cards.filter(card => {
-      const isOwner = card?.list.board.user?.id === currentUser.id;// pass the owner of board
-      const isAdminOrOwner = isOwner || currentUser.isAdmin;// pass admin
-      const cardCreator = card.userId === currentUser.id;// pass who created this card
+      const isOwner = card?.list.board.user?.id === currentUser?.id;// pass the owner of board
+      const isAdminOrOwner = isOwner || currentUser?.isAdmin;// pass admin
+      const cardCreator = card.userId === currentUser?.id;// pass who created this card
       return (card.visible || isAdminOrOwner || cardCreator) && card.active;
     });
 

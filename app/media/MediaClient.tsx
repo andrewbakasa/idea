@@ -156,12 +156,8 @@ const MediaClient: React.FC<MediaClientProps> = ({ currentUser, tagNames, userNa
         <link rel="icon" href="/logo.svg" /> {/* Or .png, .svg, etc. */}
       </Head>
       <div className="z-51 mt-[-50px]  sm:mt-[-80px] flex flex-col  sm:flex-col  justify-between sm:px-1 xs:px-2">
-          {/* <Heading
-               title={'View Media'}
-              // subtitle={'View'} 
-              isSetBackground={false}
-          /> */}
-          <div className={cn("flex gap-1 z-51",true?'flex-col':'flex-row justify-between')}>
+         
+         { currentUser && <div className={cn("flex gap-1 z-51",true?'flex-col':'flex-row justify-between')}>
                 <div className="flex flex-row gap-1 justify-end">
                    {currentCardData && <Button
                         className="mt-12 h-auto px-2 py-1.5 w-16 justify-end  text-[8px] hover:text-sm"
@@ -183,6 +179,7 @@ const MediaClient: React.FC<MediaClientProps> = ({ currentUser, tagNames, userNa
                 >                   
                 </div>
           </div>
+          }
        </div>
       <div className={cn("mt-0 pb-1 ", 0 == 0 ? "" : "shadow-xl rounded-md p-1 border-yellow-400 border-2")}>
         <div>
