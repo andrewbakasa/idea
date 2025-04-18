@@ -157,8 +157,8 @@ const MediaClient: React.FC<MediaClientProps> = ({ currentUser, tagNames, userNa
       </Head>
       <div className="z-51 mt-[-50px]  sm:mt-[-80px] flex flex-col  sm:flex-col  justify-between sm:px-1 xs:px-2">
          
-         { currentUser && <div className={cn("flex gap-1 z-51",true?'flex-col':'flex-row justify-between')}>
-                <div className="flex flex-row gap-1 justify-end">
+         <div className={cn("flex gap-1 z-51",true?'flex-col':'flex-row justify-between')}>
+         { currentUser && <div className="flex flex-row gap-1 justify-end">
                    {currentCardData && <Button
                         className="mt-12 h-auto px-2 py-1.5 w-16 justify-end  text-[8px] hover:text-sm"
                         size="sm"
@@ -173,13 +173,13 @@ const MediaClient: React.FC<MediaClientProps> = ({ currentUser, tagNames, userNa
                         debounce={1500}  //Custom debounce of 1500ms
                         placeholderText="filter records..."
                     />
-                </div>
+                </div> }
                 <div   
                   className={cn("flex w-full mt-1 z-51 sm:mt-10 rounded-lg" ,true?'py-1':'')}
                 >                   
                 </div>
           </div>
-          }
+         
        </div>
       <div className={cn("mt-0 pb-1 ", 0 == 0 ? "" : "shadow-xl rounded-md p-1 border-yellow-400 border-2")}>
         <div>
