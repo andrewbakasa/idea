@@ -13,5 +13,6 @@ export const UpdateEnquiry= z.object({
   
   email: z.string().email({ message: "Invalid email" }),
   message: z.string().min(1, { message: "Message is required" }),
+  demoproducts: z.string().array().optional().default([]), // Added demoproducts
   id: z.string(),
 });

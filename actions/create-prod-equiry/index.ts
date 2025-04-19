@@ -1,10 +1,14 @@
 "use server";
+import { revalidatePath } from "next/cache";
+import { ACTION, ENTITY_TYPE } from "@prisma/client";
+
 import prisma from "@/app/libs/prismadb";
+import { createAuditLog } from "@/lib/create-audit-log";
 import { createSafeAction } from "@/lib/create-safe-action";
 import { z } from "zod";
 
 // Define the schema directly within this file
-const UpdateEnquirySchema = z.object({
+const CreateProductEquirySchema = z.object({
   first_name: z.optional(
     z.string().min(1, { message: "First name is required" }),
   ),
@@ -17,7 +21,6 @@ const UpdateEnquirySchema = z.object({
   email: z.string().email({ message: "Invalid email" }),
   message: z.string().min(1, { message: "Message is required" }),
   demoproducts: z.string().array().optional().default([]),
-  id:z.string()
 });
 
 // Explicitly define InputType to *exactly* match the schema, including the optional and default
@@ -28,7 +31,6 @@ interface InputType {
   email: string;
   message: string;
   demoproducts?: string[];
-  id: string;
 }
 
 interface ReturnType { data?: any; error?: string; }
@@ -36,43 +38,32 @@ interface ReturnType { data?: any; error?: string; }
 const handler = async (data: InputType): Promise<ReturnType> => {
 
 
-  const { id, demoproducts, ...values } = data;
-  let enquiry;
-  try {
+  const { demoproducts, ...values } = data;
+  let productEquiry;
 
-    const child = await prisma.enquiry.findUnique({ 
-      where: { id },
-      
+  try {
+    productEquiry = await prisma.productEnquiry.create({
+      data: {
+        ...values,
+        demoproducts: demoproducts,
+      },
     });
 
-   
-    if (child ){ 
-     
-      const keys = Object.keys(values);
-       //update  general content
-       enquiry=  await prisma.enquiry.update({
-              where: { id: child?.id },
-              data: {                
-                ...values, 
-                },
-          });
+    await createAuditLog({
+      entityId: productEquiry.id,
+      entityTitle: 'productEquiry',
+      entityType: ENTITY_TYPE.CARD,
+      action: ACTION.CREATE,
+    });
 
-          
-          
-    } else {
-      //revalidatePath(`/board/${boardId}`);
-      return {
-        error: `Record can't be updated. See record creator or Admin`
-      }
-    }
-   
+
   } catch (error) {
     return {
-      error: `Failed to update.${error}`
-    }
+      error: "Failed to create.",
+    };
   }
 
-  return { data: enquiry };
+  return { data: productEquiry };
 };
 
-export const updateEnquiry = createSafeAction(UpdateEnquirySchema, handler);
+export const createProductEquiry = createSafeAction(CreateProductEquirySchema, handler);

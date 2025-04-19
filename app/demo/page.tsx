@@ -1,54 +1,82 @@
-'use client'
-import React, { useState, ChangeEvent, FormEvent } from 'react';
-//import NavBar from '../components/Navbar/NavBar';
-import Footer from '../components/Footer';
-import { useDocTitle } from '../components/CustomHook';
-import axios, { AxiosError, AxiosResponse } from 'axios';
-import NavBar from '../components/navbar/NavBar2';
-//import Notiflix from 'notiflix';
+'use client';
+import React, { useState, useRef } from 'react';
+import Footer from '../components/Footer'; // Removed relative path
+import { useDocTitle } from '../components/CustomHook'; // Removed relative path
+import { toast } from 'react-hot-toast';
+import { useAction } from '@/hooks/use-action'; // Removed relative path
+import { cn } from '@/lib/utils';
+import { createProductEquiry } from '@/actions/create-prod-equiry';
 
-interface Errors {
+
+
+interface ContactForm {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string;
+  message: string;
+  demoproducts?: string[]; // Added for options
+}
+
+interface ContactErrors {
   first_name?: string;
   last_name?: string;
   email?: string;
   phone_number?: string;
   message?: string;
-  products?: string;
+  options?: string[]; // Added for options
 }
 
-interface DemoProductResponse {
-  message: string;
+interface ContactOption {
+  id: string;
+  label: string;
+  value: string;
 }
 
-const DemoProduct: React.FC = () => {
-  useDocTitle('IDEA | Consult - Demo our products');
+const DemoProductContactForm = () => {
+  useDocTitle('IDEA | Consult - Send us a message');
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [phone, setPhone] = useState<string>('');
+  const [message, setMessage] = useState<string>('');
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]); // State for selected options
+  const [errors, setErrors] = useState<ContactErrors | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  
+  
 
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [message, setMessage] = useState('');
-  const [demoProducts, setDemoProducts] = useState<string[]>([]);
-  const [errors, setErrors] = useState<Errors>({});
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { value, checked } = e.target;
-    const updatedDemoProducts = [...demoProducts];
+   // future it will be from database
+   const contactOptions: ContactOption[] = [
+    { id: 'option-1', label: 'Smart Equipment Maintenance', value: 'smart_equip_maintenance' },
+    { id: 'option-2', label: 'Business Intelligence Outsource', value: 'business_intelligence' },
+    { id: 'option-3', label: '3D Visualisation', value: '3d_visualisation' },
+    { id: 'option-4', label: 'ERP', value: 'erp' },
+  ];
 
-    if (checked) {
-      updatedDemoProducts.push(value);
-    } else {
-      const index = updatedDemoProducts.indexOf(value);
-      if (index > -1) {
-        updatedDemoProducts.splice(index, 1);
-      }
-    }
-    setDemoProducts(updatedDemoProducts);
-    setErrors(prevErrors => ({ ...prevErrors, products: undefined }));
-  };
+  const { execute: executeCreateEnquiry, isLoading, fieldErrors } = useAction(createProductEquiry, {
+    onSuccess: (data) => {
+      toast.success(`Enquiry submitted successfully!`);
+      console.log(data);
+      clearInput();
+    },
+    onError: (error) => {
+        const errorData: ContactErrors = {};
+        if (error === "Failed to submit enquiry.  Check the form data."){
+            errorData.first_name = "First name is invalid";
+            errorData.email = "Email is required";
+        } else {
+          errorData.message = error;
+        }
+
+      toast.error(error);
+      setErrors(errorData); // Set errors from useAction
+    },
+  });
 
   const clearErrors = () => {
-    setErrors({});
+    setErrors(null);
   };
 
   const clearInput = () => {
@@ -57,131 +85,80 @@ const DemoProduct: React.FC = () => {
     setEmail('');
     setPhone('');
     setMessage('');
-    setDemoProducts([]);
+    setSelectedOptions([]); // Clear selected options
   };
 
-  const sendEmail = async (e: FormEvent) => {
-    e.preventDefault();
-    const submitButton = document.getElementById('submitBtn');
-    if (submitButton) {
-      //submitButton.disabled = true;
-      submitButton.innerHTML = 'Loading...';
-    }
+    const handleOptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, checked } = e.target;
+    const updatedOptions = [...selectedOptions];
 
-    const formData = new FormData();
-    formData.append('first_name', firstName);
-    formData.append('last_name', lastName);
-    formData.append('email', email);
-    formData.append('phone_number', phone);
-    formData.append('message', message);
-    demoProducts.forEach(product => formData.append('products[]', product)); // Send as array
-
-    try {
-      const response: AxiosResponse<DemoProductResponse> = await axios.post(
-        process.env.NEXT_PUBLIC_DEMO_REQUEST_API || '',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
-
-      if (submitButton) {
-        //submitButton.disabled = false;
-        submitButton.innerHTML = 'Send Message';
-      }
-      clearInput();
-      //Notiflix.Report.success('Success', response.data.message, 'Okay');
-    } catch (error) {
-      if (submitButton) {
-        //submitButton.disabled = false;
-        submitButton.innerHTML = 'Send Message';
-      }
-
-      const axiosError = error as AxiosError<{ message?: string; errors?: Errors }>;
-      if (axiosError.response) {
-        const { response } = axiosError;
-        if (response.status === 500 && response.data?.message) {
-          //Notiflix.Report.failure('An error occurred', response.data.message, 'Okay');
-        }
-        if (response.data?.errors) {
-          setErrors(response.data.errors);
-        }
-      } else {
-        //Notiflix.Report.failure('An error occurred', 'Please try sending the message again.', 'Okay');
-        console.error('Error sending request:', error);
+    if (checked) {
+      updatedOptions.push(value);
+    } else {
+      const index = updatedOptions.indexOf(value);
+      if (index > -1) {
+        updatedOptions.splice(index, 1);
       }
     }
+    setSelectedOptions(updatedOptions);
+    setErrors(prevErrors => ({ ...prevErrors, options: undefined }));
   };
+
+  const onSubmit = (formData: FormData) => {
+    const contactData: ContactForm = {
+      first_name: formData.get('first_name') as string,
+      last_name: formData.get('last_name') as string,
+      email: formData.get('email') as string,
+      phone_number: formData.get('phone_number') as string,
+      message: formData.get('message') as string,
+      demoproducts: selectedOptions, // Include selected options
+      
+    };
+
+    executeCreateEnquiry(contactData);
+  };
+
 
   return (
     <>
-      <div>
-        <NavBar />
-      </div>
-      <div id="demo" className="flex justify-center items-center mt-8 w-full bg-white py-12 lg:py-24">
-        <div className="container mx-auto my-8 px-4 lg:px-20" data-aos="zoom-in">
-          <form onSubmit={sendEmail} id="demoProductForm">
+      <div id="contact" className="flex justify-center items-center mt-2 w-full bg-white py-6 lg:py-12 ">
+        <div className="container mx-auto my-1 px-4 lg:px-20" data-aos="zoom-in">
+
+          <form
+            id="id1"
+            name="name1"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(formRef.current!);
+              onSubmit(formData);
+            }}
+            ref={formRef}
+            // className="mt-1 flex flex-col space-y-2 min-h-[70vh]"
+          >
             <div className="w-full bg-white p-8 my-4 md:px-12 lg:w-9/12 lg:pl-20 lg:pr-40 mr-auto rounded-2xl shadow-2xl">
               <div className="flex">
-                <h1 className="font-bold text-center lg:text-left text-blue-900 uppercase text-4xl">
-                  Demo our products
-                </h1>
+                <h1 className="font-bold text-center lg:text-left text-blue-900 uppercase text-4xl">Send us a message</h1>
               </div>
-              <div className="flex items-center my-4">
-                <input
-                  id="checkbox-1"
-                  aria-describedby="checkbox-1"
-                  type="checkbox"
-                  className="bg-gray-50 border-gray-300 focus:ring-3 focus:ring-blue-300 h-4 w-4 rounded"
-                  value="business_management_system"
-                  onChange={handleChange}
-                />
-                <label htmlFor="checkbox-1" className="ml-3 text-lg font-medium text-gray-900">
-                  OutSource
-                </label>
+              <div className="mt-4">
+                <h2 className="text-xl text-gray-700 font-semibold mb-2">Demo products</h2>
+                {contactOptions.map((option) => (
+                  <div className="flex items-center my-2" key={option.id}>
+                    <input
+                      id={option.id}
+                      aria-describedby={option.id}
+                      type="checkbox"
+                      className="bg-gray-50 border-gray-300 focus:ring-3 focus:ring-blue-300 h-4 w-4 rounded"
+                      value={option.value}
+                      onChange={handleOptionChange}
+                      checked={selectedOptions.includes(option.value)}
+                    />
+                    <label htmlFor={option.id} className="ml-3 text-lg font-medium text-gray-900">
+                      {option.label}
+                    </label>
+                  </div>
+                ))}
+                {errors?.options && <p className="text-red-500 text-sm">{errors.options.join(', ')}</p>}
               </div>
-              <div className="flex items-center my-4">
-                <input
-                  id="checkbox-2"
-                  aria-describedby="checkbox-2"
-                  type="checkbox"
-                  className="bg-gray-50 border-gray-300 focus:ring-3 focus:ring-blue-300 h-4 w-4 rounded"
-                  value="school_management_portal"
-                  onChange={handleChange}
-                />
-                <label htmlFor="checkbox-2" className="ml-3 text-lg font-medium text-gray-900">
-                  3D Modelling
-                </label>
-              </div>
-              <div className="flex items-center my-4">
-                <input
-                  id="checkbox-3"
-                  aria-describedby="checkbox-3"
-                  type="checkbox"
-                  className="bg-gray-50 border-gray-300 focus:ring-3 focus:ring-blue-300 h-4 w-4 rounded"
-                  value="payroll_management_system"
-                  onChange={handleChange}
-                />
-                <label htmlFor="checkbox-3" className="ml-3 text-lg font-medium text-gray-900">
-                  ERP
-                </label>
-              </div>
-              <div className="flex items-center my-4">
-                <input
-                  id="checkbox-4"
-                  aria-describedby="checkbox-4"
-                  type="checkbox"
-                  className="bg-gray-50 border-gray-300 focus:ring-3 focus:ring-blue-300 h-4 w-4 rounded"
-                  value="event_management_system"
-                  onChange={handleChange}
-                />
-                <label htmlFor="checkbox-4" className="ml-3 text-lg font-medium text-gray-900">
-                  Engineering VR
-                </label>
-              </div>
-              {errors.products && <p className="text-red-500 text-sm">{errors.products}</p>}
 
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2 mt-5">
                 <div>
@@ -194,7 +171,7 @@ const DemoProduct: React.FC = () => {
                     onChange={(e) => setFirstName(e.target.value)}
                     onKeyUp={clearErrors}
                   />
-                  {errors.first_name && <p className="text-red-500 text-sm">{errors.first_name}</p>}
+                  {errors?.first_name && <p className="text-red-500 text-sm">{errors.first_name}</p>}
                 </div>
 
                 <div>
@@ -207,7 +184,7 @@ const DemoProduct: React.FC = () => {
                     onChange={(e) => setLastName(e.target.value)}
                     onKeyUp={clearErrors}
                   />
-                  {errors.last_name && <p className="text-red-500 text-sm">{errors.last_name}</p>}
+                  {errors?.last_name && <p className="text-red-500 text-sm">{errors.last_name}</p>}
                 </div>
 
                 <div>
@@ -220,7 +197,7 @@ const DemoProduct: React.FC = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     onKeyUp={clearErrors}
                   />
-                  {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+                  {errors?.email && <p className="text-red-500 text-sm">{errors.email}</p>}
                 </div>
 
                 <div>
@@ -233,7 +210,7 @@ const DemoProduct: React.FC = () => {
                     onChange={(e) => setPhone(e.target.value)}
                     onKeyUp={clearErrors}
                   />
-                  {errors.phone_number && <p className="text-red-500 text-sm">{errors.phone_number}</p>}
+                  {errors?.phone_number && <p className="text-red-500 text-sm">{errors.phone_number}</p>}
                 </div>
               </div>
               <div className="my-4">
@@ -245,20 +222,22 @@ const DemoProduct: React.FC = () => {
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyUp={clearErrors}
                 ></textarea>
-                {errors.message && <p className="text-red-500 text-sm">{errors.message}</p>}
+                {errors?.message && <p className="text-red-500 text-sm">{errors.message}</p>}
               </div>
               <div className="my-2 w-1/2 lg:w-2/4">
                 <button
                   type="submit"
                   id="submitBtn"
-                  className="uppercase text-sm font-bold tracking-wide bg-gray-500 hover:bg-blue-900 text-gray-100 p-3 rounded-lg w-full focus:outline-none focus:shadow-outline"
+                  className="uppercase text-sm font-bold tracking-wide bg-gray-500 hover:bg-blue-900 text-gray-100 p-3 rounded-lg w-full
+                                        focus:outline-none focus:shadow-outline"
+                  disabled={isLoading}
                 >
-                  Send Message
+                  {isLoading ? 'Sending...' : 'Send Message'}
                 </button>
               </div>
             </div>
           </form>
-          <div className="w-full lg:-mt-96 lg:w-2/6 px-8 py-6 ml-auto bg-blue-900 rounded-2xl">
+          <div className="w-full  lg:-mt-96 lg:w-2/6 px-8 py-6 ml-auto bg-blue-900 rounded-2xl">
             <div className="flex flex-col text-white">
               <div className="flex my-4 w-2/3 lg:w-3/4">
                 <div className="flex flex-col">
@@ -291,7 +270,7 @@ const DemoProduct: React.FC = () => {
                   href="https://www.facebook.com/ENLIGHTENEERING/"
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-full flex justify-center bg-white h-8 text-blue-900  w-8 mx-1 text-center pt-1"
+                  className="rounded-full flex justify-center bg-white h-8 text-blue-900  w-8  mx-1 text-center pt-1"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -307,7 +286,7 @@ const DemoProduct: React.FC = () => {
                   href="https://www.linkedin.com/company/enlighteneering-inc-"
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-full flex justify-center bg-white h-8 text-blue-900  w-8 mx-1 text-center pt-1"
+                  className="rounded-full flex justify-center bg-white h-8 text-blue-900  w-8  mx-1 text-center pt-1"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -328,6 +307,7 @@ const DemoProduct: React.FC = () => {
       <Footer />
     </>
   );
-};
 
-export default DemoProduct;
+};
+export default DemoProductContactForm
+

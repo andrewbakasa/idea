@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 
-export const CreateEnquiry= z.object({
+export const CreateProductEquiry= z.object({
   first_name: z.optional(
     z.string().min(1, { message: "First name is required" }),
   ),
@@ -13,7 +13,7 @@ export const CreateEnquiry= z.object({
   ),
   email: z.string().email({ message: "Invalid email" }),
   message: z.string().min(1, { message: "Message is required" }),
-  category: z.string().array().optional().default([]),
+  demoproducts: z.string().array().optional().default([]),
   
  // id: z.string(),
 });

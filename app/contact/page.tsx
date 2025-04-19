@@ -1,14 +1,13 @@
-
 'use client';
 import React, { useState, useRef } from 'react';
-import Footer from '../components/Footer';
-import { useDocTitle } from '../components/CustomHook';
+import Footer from '../components/Footer'; // Removed relative path
+import { useDocTitle } from '../components/CustomHook'; // Removed relative path
 import { toast } from 'react-hot-toast';
-import { useAction } from '@/hooks/use-action'; // Assuming the path to your useAction hook
-import { createEnquiry } from '@/actions/create-equiry';
-import { FormSubmit } from '@/components/form/form-submit';
-import { Button } from '@/components/ui/button';
+import { useAction } from '@/hooks/use-action'; // Removed relative path
+import { createEnquiry } from '@/actions/create-equiry'; // Removed relative path
 import { cn } from '@/lib/utils';
+
+
 
 interface ContactForm {
   first_name: string;
@@ -16,6 +15,7 @@ interface ContactForm {
   email: string;
   phone_number: string;
   message: string;
+  category?: string[]; // Added for options
 }
 
 interface ContactErrors {
@@ -24,6 +24,13 @@ interface ContactErrors {
   email?: string;
   phone_number?: string;
   message?: string;
+  options?: string[]; // Added for options
+}
+
+interface ContactOption {
+  id: string;
+  label: string;
+  value: string;
 }
 
 const ContactFormComp = () => {
@@ -33,8 +40,18 @@ const ContactFormComp = () => {
   const [email, setEmail] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
   const [message, setMessage] = useState<string>('');
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]); // State for selected options
   const [errors, setErrors] = useState<ContactErrors | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  
+  
+  // future it will be from database
+    const contactOptions: ContactOption[] = [
+    { id: 'option-1', label: 'General Inquiry', value: 'general_inquiry' },
+    { id: 'option-2', label: 'Sales Question', value: 'sales_question' },
+    { id: 'option-3', label: 'Support Request', value: 'support_request' },
+    { id: 'option-4', label: 'Partnership Inquiry', value: 'partnership_inquiry' },
+  ];
 
   const { execute: executeCreateEnquiry, isLoading, fieldErrors } = useAction(createEnquiry, {
     onSuccess: (data) => {
@@ -43,7 +60,16 @@ const ContactFormComp = () => {
       clearInput();
     },
     onError: (error) => {
+        const errorData: ContactErrors = {};
+        if (error === "Failed to submit enquiry.  Check the form data."){
+            errorData.first_name = "First name is invalid";
+            errorData.email = "Email is required";
+        } else {
+          errorData.message = error;
+        }
+
       toast.error(error);
+      setErrors(errorData); // Set errors from useAction
     },
   });
 
@@ -57,6 +83,23 @@ const ContactFormComp = () => {
     setEmail('');
     setPhone('');
     setMessage('');
+    setSelectedOptions([]); // Clear selected options
+  };
+
+    const handleOptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, checked } = e.target;
+    const updatedOptions = [...selectedOptions];
+
+    if (checked) {
+      updatedOptions.push(value);
+    } else {
+      const index = updatedOptions.indexOf(value);
+      if (index > -1) {
+        updatedOptions.splice(index, 1);
+      }
+    }
+    setSelectedOptions(updatedOptions);
+    setErrors(prevErrors => ({ ...prevErrors, options: undefined }));
   };
 
   const onSubmit = (formData: FormData) => {
@@ -66,6 +109,7 @@ const ContactFormComp = () => {
       email: formData.get('email') as string,
       phone_number: formData.get('phone_number') as string,
       message: formData.get('message') as string,
+      category: selectedOptions, // Include selected options
     };
 
     executeCreateEnquiry(contactData);
@@ -74,10 +118,9 @@ const ContactFormComp = () => {
 
   return (
     <>
-     
       <div id="contact" className="flex justify-center items-center mt-2 w-full bg-white py-6 lg:py-12 ">
         <div className="container mx-auto my-1 px-4 lg:px-20" data-aos="zoom-in">
-         
+
           <form
             id="id1"
             name="name1"
@@ -93,6 +136,27 @@ const ContactFormComp = () => {
               <div className="flex">
                 <h1 className="font-bold text-center lg:text-left text-blue-900 uppercase text-4xl">Send us a message</h1>
               </div>
+              <div className="mt-4">
+                <h2 className="text-xl text-gray-700 font-semibold mb-2">How can we help you?</h2>
+                {contactOptions.map((option) => (
+                  <div className="flex items-center my-2" key={option.id}>
+                    <input
+                      id={option.id}
+                      aria-describedby={option.id}
+                      type="checkbox"
+                      className="bg-gray-50 border-gray-300 focus:ring-3 focus:ring-blue-300 h-4 w-4 rounded"
+                      value={option.value}
+                      onChange={handleOptionChange}
+                      checked={selectedOptions.includes(option.value)}
+                    />
+                    <label htmlFor={option.id} className="ml-3 text-lg font-medium text-gray-900">
+                      {option.label}
+                    </label>
+                  </div>
+                ))}
+                {errors?.options && <p className="text-red-500 text-sm">{errors.options.join(', ')}</p>}
+              </div>
+
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2 mt-5">
                 <div>
                   <input
@@ -163,8 +227,9 @@ const ContactFormComp = () => {
                   id="submitBtn"
                   className="uppercase text-sm font-bold tracking-wide bg-gray-500 hover:bg-blue-900 text-gray-100 p-3 rounded-lg w-full
                                         focus:outline-none focus:shadow-outline"
+                  disabled={isLoading}
                 >
-                  Send Message
+                  {isLoading ? 'Sending...' : 'Send Message'}
                 </button>
               </div>
             </div>

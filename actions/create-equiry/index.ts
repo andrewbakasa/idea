@@ -5,28 +5,47 @@ import { ACTION, ENTITY_TYPE } from "@prisma/client";
 import prisma from "@/app/libs/prismadb";
 import { createAuditLog } from "@/lib/create-audit-log";
 import { createSafeAction } from "@/lib/create-safe-action";
+import { z } from "zod";
 
-import { CreateEnquiry } from "./schema";
-import { InputType, ReturnType } from "./types";
-import getCurrentUser from "@/app/actions/getCurrentUser";
+// Define the schema directly within this file
+const CreateEnquirySchema = z.object({
+  first_name: z.optional(
+    z.string().min(1, { message: "First name is required" }),
+  ),
+  last_name: z.optional(
+    z.string().min(1, { message: "Last name is required" })
+  ),
+  phone_number: z.optional(
+    z.string().min(1, { message: "Phone number is required" }),
+  ),
+  email: z.string().email({ message: "Invalid email" }),
+  message: z.string().min(1, { message: "Message is required" }),
+  category: z.string().array().optional().default([]),
+});
+
+// Explicitly define InputType to *exactly* match the schema, including the optional and default
+interface InputType {
+  first_name?: string | undefined;
+  last_name?: string | undefined;
+  phone_number?: string | undefined;
+  email: string;
+  message: string;
+  category?: string[];
+}
+
+interface ReturnType { data?: any; error?: string; }
 
 const handler = async (data: InputType): Promise<ReturnType> => {
-  // const currentUser = await getCurrentUser();
 
-  // if (!currentUser) {
-  //   return {
-  //     error: "Unauthorized",
-  //   };
-  // }
-  const { ...values } = data;
+
+  const { category, ...values } = data;
   let enquiry;
 
   try {
-    
-
     enquiry = await prisma.enquiry.create({
       data: {
-        ...values
+        ...values,
+        category: category,
       },
     });
 
@@ -36,16 +55,15 @@ const handler = async (data: InputType): Promise<ReturnType> => {
       entityType: ENTITY_TYPE.CARD,
       action: ACTION.CREATE,
     });
-    
-    
+
+
   } catch (error) {
     return {
-      error: "Failed to create."
-    }
+      error: "Failed to create.",
+    };
   }
 
-  //revalidatePath(`/board/${boardId}`);
   return { data: enquiry };
 };
 
-export const createEnquiry = createSafeAction(CreateEnquiry, handler);
+export const createEnquiry = createSafeAction(CreateEnquirySchema, handler);

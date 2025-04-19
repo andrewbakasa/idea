@@ -233,16 +233,32 @@ model Comment{
   @@index([userId])
 }
 
+
+
 model Enquiry{
-  id         String @id @default(auto()) @map("_id") @db.ObjectId 
-  first_name String? //copy duplicate to reduce fetch overheads
-  last_name  String?// copy to reduce overheads
-  email      String
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  first_name  String?  //copy duplicate to reduce fetch overheads
+  last_name   String?  // copy to reduce overheads
+  email       String
   phone_number String?
-  message      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt 
+  message       String
+  category String[] @default([]) // Added default empty array
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
+
+model ProductEnquiry{
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  first_name  String?  //copy duplicate to reduce fetch overheads
+  last_name   String?  // copy to reduce overheads
+  email       String
+  phone_number String?
+  message       String
+  demoproducts String[] @default([]) // Added default empty array
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
  
 model BoardView{// per user
   id        String @id @default(auto()) @map("_id") @db.ObjectId 
