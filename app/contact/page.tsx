@@ -71,11 +71,13 @@ const ContactFormComp = () => {
     executeCreateEnquiry(contactData);
   };
 
+
   return (
     <>
-      <div id="contact" className="flex justify-center items-center mt-8 w-full bg-white py-12 lg:py-24 ">
-        <div className="container mx-auto my-8 px-4 lg:px-20" data-aos="zoom-in">
-
+     
+      <div id="contact" className="flex justify-center items-center mt-2 w-full bg-white py-6 lg:py-12 ">
+        <div className="container mx-auto my-1 px-4 lg:px-20" data-aos="zoom-in">
+         
           <form
             id="id1"
             name="name1"
@@ -102,7 +104,6 @@ const ContactFormComp = () => {
                     onChange={(e) => setFirstName(e.target.value)}
                     onKeyUp={clearErrors}
                   />
-                  {fieldErrors?.first_name && <p className="text-red-500 text-sm">{fieldErrors.first_name}</p>}
                   {errors?.first_name && <p className="text-red-500 text-sm">{errors.first_name}</p>}
                 </div>
 
@@ -116,7 +117,6 @@ const ContactFormComp = () => {
                     onChange={(e) => setLastName(e.target.value)}
                     onKeyUp={clearErrors}
                   />
-                  {fieldErrors?.last_name && <p className="text-red-500 text-sm">{fieldErrors.last_name}</p>}
                   {errors?.last_name && <p className="text-red-500 text-sm">{errors.last_name}</p>}
                 </div>
 
@@ -130,7 +130,6 @@ const ContactFormComp = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     onKeyUp={clearErrors}
                   />
-                  {fieldErrors?.email && <p className="text-red-500 text-sm">{fieldErrors.email}</p>}
                   {errors?.email && <p className="text-red-500 text-sm">{errors.email}</p>}
                 </div>
 
@@ -144,7 +143,6 @@ const ContactFormComp = () => {
                     onChange={(e) => setPhone(e.target.value)}
                     onKeyUp={clearErrors}
                   />
-                  {fieldErrors?.phone_number && <p className="text-red-500 text-sm">{fieldErrors.phone_number}</p>}
                   {errors?.phone_number && <p className="text-red-500 text-sm">{errors.phone_number}</p>}
                 </div>
               </div>
@@ -157,24 +155,21 @@ const ContactFormComp = () => {
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyUp={clearErrors}
                 ></textarea>
-                {fieldErrors?.message && <p className="text-red-500 text-sm">{fieldErrors.message}</p>}
                 {errors?.message && <p className="text-red-500 text-sm">{errors.message}</p>}
               </div>
-              <div className="my-2 w-1/2 lg:w-2/4 flex items-center space-x-2">
-                <Button
+              <div className="my-2 w-1/2 lg:w-2/4">
+                <button
                   type="submit"
                   id="submitBtn"
-                  disabled={isLoading}
-                  className="uppercase text-sm font-bold tracking-wide bg-gray-500 hover:bg-blue-900 text-gray-100 p-3 rounded-lg w-full focus:outline-none focus:shadow-outline disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="uppercase text-sm font-bold tracking-wide bg-gray-500 hover:bg-blue-900 text-gray-100 p-3 rounded-lg w-full
+                                        focus:outline-none focus:shadow-outline"
                 >
-                  {isLoading ? 'Sending...' : 'Send Message'}
-                </Button>
-               
+                  Send Message
+                </button>
               </div>
             </div>
           </form>
-          <div className="w-full  lg:-mt-96 lg:w-2/6 px-8 py-6 ml-auto bg-blue-900 rounded-2xl">
-          
+          <div className="w-full  lg:-mt-96 lg:w-2/6 px-8 py-6 ml-auto bg-blue-900 rounded-2xl">
             <div className="flex flex-col text-white">
               <div className="flex my-4 w-2/3 lg:w-3/4">
                 <div className="flex flex-col">
@@ -207,7 +202,7 @@ const ContactFormComp = () => {
                   href="https://www.facebook.com/ENLIGHTENEERING/"
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-full flex justify-center bg-white h-8 text-blue-900  w-8  mx-1 text-center pt-1"
+                  className="rounded-full flex justify-center bg-white h-8 text-blue-900  w-8  mx-1 text-center pt-1"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -223,7 +218,7 @@ const ContactFormComp = () => {
                   href="https://www.linkedin.com/company/enlighteneering-inc-"
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-full flex justify-center bg-white h-8 text-blue-900  w-8  mx-1 text-center pt-1"
+                  className="rounded-full flex justify-center bg-white h-8 text-blue-900  w-8  mx-1 text-center pt-1"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -243,7 +238,7 @@ const ContactFormComp = () => {
       </div>
       <Footer />
     </>
-   
   );
+
 };
 export default ContactFormComp
