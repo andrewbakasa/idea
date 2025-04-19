@@ -13,16 +13,7 @@ export default withAuth(
     // `withAuth` augments your `Request` with the user's token.
     function middleware(request: NextRequestWithAuth) {
 
-        // console.log(request.nextUrl.pathname);
-        //console.log(request.nextauth.token,request.nextauth.token?.roles?.includes("Admin"));
-        //request.nextauth.token?.roles.includes("Admin")
-        // if (request.nextUrl.pathname.startsWith('')
-        //     && !request.nextauth.token?.roles?.includes("Admin") ) {
-        //     return NextResponse.rewrite(
-        //         ///redirects
-        //         new URL("/myprojects", request.url)
-        //     )
-        // }
+       
 
         if (request.nextUrl.pathname.startsWith('/achived-projects')
             && !request.nextauth.token?.roles?.includes("Admin") ) {
@@ -72,10 +63,6 @@ export const config = {
     "/archived-projects",
     "/projects",
     "/myprojects",
-    "/trips",
-    "/reservations",
-    "/properties",
-    "/favorites",
     "/users"
   ]
 };
