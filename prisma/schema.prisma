@@ -232,6 +232,17 @@ model Comment{
   @@index([cardId])
   @@index([userId])
 }
+
+model Enquiry{
+  id         String @id @default(auto()) @map("_id") @db.ObjectId 
+  first_name String? //copy duplicate to reduce fetch overheads
+  last_name  String?// copy to reduce overheads
+  email      String
+  phone_number String?
+  message      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt 
+}
  
 model BoardView{// per user
   id        String @id @default(auto()) @map("_id") @db.ObjectId 

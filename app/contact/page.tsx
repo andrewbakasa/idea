@@ -1,12 +1,14 @@
-'use client'
-import React, { useState, useEffect } from 'react';
-//import NavBar from '../components/Navbar/NavBar';
+
+'use client';
+import React, { useState, useRef } from 'react';
 import Footer from '../components/Footer';
 import { useDocTitle } from '../components/CustomHook';
-import axios, { AxiosResponse, AxiosError } from 'axios';
-//import Notiflix from 'notiflix';
-import { NextPage } from 'next';
-import NavBar from '../components/navbar/NavBar2';
+import { toast } from 'react-hot-toast';
+import { useAction } from '@/hooks/use-action'; // Assuming the path to your useAction hook
+import { createEnquiry } from '@/actions/create-equiry';
+import { FormSubmit } from '@/components/form/form-submit';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface ContactForm {
   first_name: string;
@@ -24,12 +26,7 @@ interface ContactErrors {
   message?: string;
 }
 
-interface ApiResponse {
-  message: string;
-  errors: ContactErrors | null;
-}
-
-const Contact: NextPage = () => {
+const ContactFormComp = () => {
   useDocTitle('IDEA | Consult - Send us a message');
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
@@ -37,6 +34,18 @@ const Contact: NextPage = () => {
   const [phone, setPhone] = useState<string>('');
   const [message, setMessage] = useState<string>('');
   const [errors, setErrors] = useState<ContactErrors | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const { execute: executeCreateEnquiry, isLoading, fieldErrors } = useAction(createEnquiry, {
+    onSuccess: (data) => {
+      toast.success(`Enquiry submitted successfully!`);
+      console.log(data);
+      clearInput();
+    },
+    onError: (error) => {
+      toast.error(error);
+    },
+  });
 
   const clearErrors = () => {
     setErrors(null);
@@ -50,74 +59,34 @@ const Contact: NextPage = () => {
     setMessage('');
   };
 
-  const sendEmail = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const submitButton = document.getElementById('submitBtn');
-    if (submitButton) {
-      //submitButton.disabled = true;
-      submitButton.innerHTML = 'Loading...';
-    }
+  const onSubmit = (formData: FormData) => {
+    const contactData: ContactForm = {
+      first_name: formData.get('first_name') as string,
+      last_name: formData.get('last_name') as string,
+      email: formData.get('email') as string,
+      phone_number: formData.get('phone_number') as string,
+      message: formData.get('message') as string,
+    };
 
-    const formData = new FormData();
-    formData.append('first_name', firstName);
-    formData.append('last_name', lastName);
-    formData.append('email', email);
-    formData.append('phone_number', phone);
-    formData.append('message', message);
-
-    try {
-      const response: AxiosResponse<ApiResponse> = await axios.post(
-        process.env.NEXT_PUBLIC_CONTACT_API as string,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
-
-      if (submitButton) {
-       // submitButton.disabled = false;
-        submitButton.innerHTML = 'Send Message';
-      }
-      clearInput();
-      //Notiflix.Report.success('Success', response.data.message, 'Okay');
-    } catch (error: unknown) {
-      if (submitButton) {
-       // submitButton.disabled = false;
-        submitButton.innerHTML = 'Send Message';
-      }
-
-      const axiosError = error as AxiosError<ApiResponse>;
-      if (axiosError.response) {
-        if (axiosError.response.status === 500) {
-          // Notiflix.Report.failure(
-          //   'An error occurred',
-          //   axiosError.response.data.message,
-          //   'Okay'
-          // );
-        }
-        if (axiosError.response.data.errors !== null) {
-          setErrors(axiosError.response.data.errors);
-        }
-      } else {
-        // Notiflix.Report.failure(
-        //   'Network Error',
-        //   'There was a problem connecting to the server.',
-        //   'Okay'
-        // );
-      }
-    }
+    executeCreateEnquiry(contactData);
   };
 
   return (
     <>
-      <div>
-        <NavBar />
-      </div>
       <div id="contact" className="flex justify-center items-center mt-8 w-full bg-white py-12 lg:py-24 ">
         <div className="container mx-auto my-8 px-4 lg:px-20" data-aos="zoom-in">
-          <form onSubmit={sendEmail}>
+
+          <form
+            id="id1"
+            name="name1"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(formRef.current!);
+              onSubmit(formData);
+            }}
+            ref={formRef}
+            // className="mt-1 flex flex-col space-y-2 min-h-[70vh]"
+          >
             <div className="w-full bg-white p-8 my-4 md:px-12 lg:w-9/12 lg:pl-20 lg:pr-40 mr-auto rounded-2xl shadow-2xl">
               <div className="flex">
                 <h1 className="font-bold text-center lg:text-left text-blue-900 uppercase text-4xl">Send us a message</h1>
@@ -133,6 +102,7 @@ const Contact: NextPage = () => {
                     onChange={(e) => setFirstName(e.target.value)}
                     onKeyUp={clearErrors}
                   />
+                  {fieldErrors?.first_name && <p className="text-red-500 text-sm">{fieldErrors.first_name}</p>}
                   {errors?.first_name && <p className="text-red-500 text-sm">{errors.first_name}</p>}
                 </div>
 
@@ -146,6 +116,7 @@ const Contact: NextPage = () => {
                     onChange={(e) => setLastName(e.target.value)}
                     onKeyUp={clearErrors}
                   />
+                  {fieldErrors?.last_name && <p className="text-red-500 text-sm">{fieldErrors.last_name}</p>}
                   {errors?.last_name && <p className="text-red-500 text-sm">{errors.last_name}</p>}
                 </div>
 
@@ -159,6 +130,7 @@ const Contact: NextPage = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     onKeyUp={clearErrors}
                   />
+                  {fieldErrors?.email && <p className="text-red-500 text-sm">{fieldErrors.email}</p>}
                   {errors?.email && <p className="text-red-500 text-sm">{errors.email}</p>}
                 </div>
 
@@ -172,6 +144,7 @@ const Contact: NextPage = () => {
                     onChange={(e) => setPhone(e.target.value)}
                     onKeyUp={clearErrors}
                   />
+                  {fieldErrors?.phone_number && <p className="text-red-500 text-sm">{fieldErrors.phone_number}</p>}
                   {errors?.phone_number && <p className="text-red-500 text-sm">{errors.phone_number}</p>}
                 </div>
               </div>
@@ -184,21 +157,24 @@ const Contact: NextPage = () => {
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyUp={clearErrors}
                 ></textarea>
+                {fieldErrors?.message && <p className="text-red-500 text-sm">{fieldErrors.message}</p>}
                 {errors?.message && <p className="text-red-500 text-sm">{errors.message}</p>}
               </div>
-              <div className="my-2 w-1/2 lg:w-2/4">
-                <button
+              <div className="my-2 w-1/2 lg:w-2/4 flex items-center space-x-2">
+                <Button
                   type="submit"
                   id="submitBtn"
-                  className="uppercase text-sm font-bold tracking-wide bg-gray-500 hover:bg-blue-900 text-gray-100 p-3 rounded-lg w-full
-                                        focus:outline-none focus:shadow-outline"
+                  disabled={isLoading}
+                  className="uppercase text-sm font-bold tracking-wide bg-gray-500 hover:bg-blue-900 text-gray-100 p-3 rounded-lg w-full focus:outline-none focus:shadow-outline disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
-                  Send Message
-                </button>
+                  {isLoading ? 'Sending...' : 'Send Message'}
+                </Button>
+               
               </div>
             </div>
           </form>
-          <div className="w-full  lg:-mt-96 lg:w-2/6 px-8 py-6 ml-auto bg-blue-900 rounded-2xl">
+          <div className="w-full  lg:-mt-96 lg:w-2/6 px-8 py-6 ml-auto bg-blue-900 rounded-2xl">
+          
             <div className="flex flex-col text-white">
               <div className="flex my-4 w-2/3 lg:w-3/4">
                 <div className="flex flex-col">
@@ -231,7 +207,7 @@ const Contact: NextPage = () => {
                   href="https://www.facebook.com/ENLIGHTENEERING/"
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-full flex justify-center bg-white h-8 text-blue-900  w-8  mx-1 text-center pt-1"
+                  className="rounded-full flex justify-center bg-white h-8 text-blue-900  w-8  mx-1 text-center pt-1"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -247,7 +223,7 @@ const Contact: NextPage = () => {
                   href="https://www.linkedin.com/company/enlighteneering-inc-"
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-full flex justify-center bg-white h-8 text-blue-900  w-8  mx-1 text-center pt-1"
+                  className="rounded-full flex justify-center bg-white h-8 text-blue-900  w-8  mx-1 text-center pt-1"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -267,7 +243,7 @@ const Contact: NextPage = () => {
       </div>
       <Footer />
     </>
+   
   );
 };
-
-export default Contact;
+export default ContactFormComp
